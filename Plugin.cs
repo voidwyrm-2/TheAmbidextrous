@@ -42,7 +42,7 @@ namespace NuclearPasta.TheAmbidextrous
             On.Player.Die += Player_Die;
             On.Lizard.ctor += Lizard_ctor;
             On.Player.Grabability += new On.Player.hook_Grabability(DoubleSpear);
-            On.Player.SwallowObject += new On.Player.hook_SwallowObject(Player_SwallowObject);
+            //On.Player.SwallowObject += new On.Player.hook_SwallowObject(Player_SwallowObject);
             On.Player.Grabability += new On.Player.hook_Grabability(DoubleEnergyCell);
         }
         
@@ -60,62 +60,6 @@ namespace NuclearPasta.TheAmbidextrous
                 return Player.ObjectGrabability.OneHand;
             }
             return orig(self, obj);
-        }
-
-            private void Player_SwallowObject(On.Player.orig_SwallowObject orig, Player self, int grasp)
-        {
-            Room room = self.room;
-            Vector2 pos = self.mainBodyChunk.pos;
-            Color color = self.ShortCutColor();
-            AbstractPhysicalObject abstractPhysicalObject = self.grasps[grasp].grabbed.abstractPhysicalObject;
-            orig.Invoke(self, grasp);
-            bool flag = abstractPhysicalObject.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb && self.slugcatStats.name.value == "The Ambidextrous";
-            if (flag)
-            {
-                room.AddObject(new Explosion(room, self, pos, 7, 250f, 6.2f, 2f, 280f, 0.25f, self, 0.7f, 160f, 1f));
-                room.AddObject(new Explosion.ExplosionLight(pos, 280f, 1f, 7, color));
-                room.AddObject(new Explosion.ExplosionLight(pos, 230f, 1f, 3, new Color(1f, 1f, 1f)));
-                room.AddObject(new ExplosionSpikes(room, pos, 14, 30f, 9f, 7f, 170f, color));
-                room.AddObject(new ShockWave(pos, 330f, 0.045f, 5, false));
-                room.ScreenMovement(new Vector2?(pos), default(Vector2), 1.3f);
-                room.PlaySound(SoundID.Bomb_Explode, pos);
-                room.InGameNoise(new InGameNoise(pos, 9000f, self, 1f));
-                self.objectInStomach = null;
-                self.Die();
-                Debug.Log("Tinkerer Triggered Bomb And Died!");
-            }
-            bool flag2 = abstractPhysicalObject.type == AbstractPhysicalObject.AbstractObjectType.FirecrackerPlant && self.slugcatStats.name.value == "The Ambidextrous";
-            if (flag2)
-            {
-                room.AddObject(new Explosion(room, self, pos, 7, 380f, 6.2f, 0.2f, 280f, 0.25f, self, 0.7f, 160f, 1f));
-                room.AddObject(new Explosion.ExplosionLight(pos, 280f, 1f, 7, color));
-                room.AddObject(new Explosion.ExplosionLight(pos, 230f, 1f, 3, new Color(1f, 1f, 1f)));
-                room.AddObject(new ExplosionSpikes(room, pos, 14, 30f, 9f, 7f, 170f, color));
-                room.AddObject(new ShockWave(pos, 240f, 0.045f, 30, false));
-                room.ScreenMovement(new Vector2?(pos), default(Vector2), 1.3f);
-                room.PlaySound(SoundID.Firecracker_Bang, pos);
-                room.InGameNoise(new InGameNoise(pos, 9000f, self, 1f));
-                self.objectInStomach = null;
-                self.Stun(250);
-                Debug.Log("Tinkerer Triggered: FirecrackerPlant");
-            }
-            bool flag3 = abstractPhysicalObject.type == MoreSlugcatsEnums.AbstractObjectType.SingularityBomb && self.slugcatStats.name.value == "The Ambidextrous";
-            if (flag3)
-            {
-                room.AddObject(new SingularityBomb.SparkFlash(pos, 300f, new Color(0f, 0f, 1f)));
-                room.AddObject(new Explosion(room, self, pos, 7, 250f, 6.2f, 20f, 280f, 0.25f, self, 0.7f, 160f, 1f));
-                room.AddObject(new Explosion(room, self, pos, 7, 2000f, 4f, 0f, 400f, 0.25f, self, 0.3f, 200f, 1f));
-                room.AddObject(new Explosion.ExplosionLight(pos, 280f, 1f, 7, color));
-                room.AddObject(new Explosion.ExplosionLight(pos, 230f, 1f, 3, new Color(1f, 1f, 1f)));
-                room.AddObject(new Explosion.ExplosionLight(pos, 2000f, 2f, 60, color));
-                room.AddObject(new ShockWave(pos, 350f, 0.485f, 300, true));
-                room.AddObject(new ShockWave(pos, 2000f, 0.185f, 180, false));
-                room.PlaySound(SoundID.Bomb_Explode, pos);
-                room.InGameNoise(new InGameNoise(pos, 9000f, self, 1f));
-                self.objectInStomach = null;
-                self.Die();
-                Debug.Log("Tinkerer Triggered SingularityBomb And Died!");
-            }
         }
 
         //credit to ⇐ Deathpits (Ping Me!) for being awesome and helping an idiot like me
