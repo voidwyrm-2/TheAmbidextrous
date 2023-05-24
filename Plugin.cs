@@ -57,7 +57,7 @@ namespace NuclearPasta.TheAmbidextrous
             //if it is my scug and it is the object type of EnergyCell then change the grabability to only using one hand
             if (self.slugcatStats.name.value == "The Ambidextrous" && obj is EnergyCell)
             {
-                return Player.ObjectGrabability.OneHand;
+                return (Player.ObjectGrabability)1; 
             }
             return orig(self, obj);
         }
@@ -67,8 +67,8 @@ namespace NuclearPasta.TheAmbidextrous
         private Player.ObjectGrabability DoubleSpear(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
         {
             if (self.slugcatStats.name.value == "The Ambidextrous" && obj is Weapon)//if this is not my scug, then default behavior. if it is my scug and it is the object type of Weapon then change the grabability to only using one hand
-            {
-                return Player.ObjectGrabability.OneHand;
+            {  
+                return (Player.ObjectGrabability)1;
             }
             return orig(self, obj);
             //if (self.slugcatStats.name.value != "The Ambidextrous")
