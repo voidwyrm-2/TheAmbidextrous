@@ -18,7 +18,7 @@ using Pkuyo.Wanderer.Cosmetic;
 
 namespace NuclearPasta.TheAmbidextrous
 {
-    [BepInPlugin(MOD_ID, "The Ambidextrous", "1.0.0")]
+    [BepInPlugin(MOD_ID, "The Ambidextrous", "1.0.3")]
     class TheAmbidextrousMod : BaseUnityPlugin
     {
         private const string MOD_ID = "dv.theambidextrous";
@@ -41,9 +41,9 @@ namespace NuclearPasta.TheAmbidextrous
             On.Player.Jump += Player_Jump;
             On.Player.Die += Player_Die;
             On.Lizard.ctor += Lizard_ctor;
-            On.Player.Grabability += new On.Player.hook_Grabability(DoubleSpear);
+            On.Player.Grabability += DoubleEnergyCell;
             //On.Player.SwallowObject += new On.Player.hook_SwallowObject(Player_SwallowObject);
-            On.Player.Grabability += new On.Player.hook_Grabability(DoubleEnergyCell);
+            On.Player.Grabability += DoubleSpear;
         }
         
         // Load any resources, such as sprites or sounds
@@ -53,24 +53,54 @@ namespace NuclearPasta.TheAmbidextrous
 
         private Player.ObjectGrabability DoubleEnergyCell(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
         {
+
+            bool flag = obj is Weapon;
+            if (flag)
+            {
+                bool flag2 = DualWielding.TryGet(self, out bool dualwieldbool) && dualwieldbool;
+                if (flag2)
+                {
+                    return (Player.ObjectGrabability)1;
+                }
+            }
+            return orig.Invoke(self, obj);
+
             //if this is not my scug, then default behavior.
             //if it is my scug and it is the object type of EnergyCell then change the grabability to only using one hand
-            if (self.slugcatStats.name.value == "The Ambidextrous" && obj is EnergyCell)
-            {
-                return (Player.ObjectGrabability)1; 
-            }
-            return orig(self, obj);
+            //bool flag = DualEnergyCell.TryGet(self, out bool dualenergycellbool) && dualenergycellbool;
+            //if (self.slugcatStats.name.value == "The Ambidextrous" && obj is EnergyCell && flag == true)
+            //{
+            //    return (Player.ObjectGrabability)1; 
+            //}
+            //return orig(self, obj);
         }
 
-        //credit to ⇐ Deathpits (Ping Me!) for being awesome and helping an idiot like me
-        // and Vigaro for a simplified version
+        //credit to Deathpits for being awesome and helping an idiot like me,
+        //Vigaro for a simplified version,
+        //and Slime_Cubed for making me both more and less confused than I already was
+        //start of the conversion: https://discord.com/channels/291184728944410624/305139167300550666/1110215808354889748
+        //conversion with Slime_Cubed: https://discord.com/channels/291184728944410624/431534164932689921/1110263399885045810
+        //(for those who need to reference something from there)
         private Player.ObjectGrabability DoubleSpear(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
         {
-            if (self.slugcatStats.name.value == "The Ambidextrous" && obj is Weapon)//if this is not my scug, then default behavior. if it is my scug and it is the object type of Weapon then change the grabability to only using one hand
-            {  
-                return (Player.ObjectGrabability)1;
+
+            bool flag = obj is Weapon;
+            if (flag)
+            {
+                bool flag2 = DualWielding.TryGet(self, out bool dualwieldbool) && dualwieldbool;
+                if (flag2)
+                {
+                    return (Player.ObjectGrabability)1;
+                }
             }
-            return orig(self, obj);
+            return orig.Invoke(self, obj);
+
+            //bool flag2 = DualWielding.TryGet(self, out bool dualwieldbool) && dualwieldbool;
+            //if (self.slugcatStats.name.value == "The Ambidextrous" && obj is Weapon && flag2 == true)//if this is not my scug, then default behavior. if it is my scug and it is the object type of Weapon then change the grabability to only using one hand
+            //{  
+            //    return (Player.ObjectGrabability)1;
+            //}
+            //return orig(self, obj);
             //if (self.slugcatStats.name.value != "The Ambidextrous")
             //{
             // If this isn't your cat, do default behaviour.
@@ -78,15 +108,15 @@ namespace NuclearPasta.TheAmbidextrous
             //}
             //if (obj is Weapon)
             //{
-                // Any weapon is dual-wieldable, including spears
-                //return Player.ObjectGrabability.OneHand;
+            // Any weapon is dual-wieldable, including spears
+            //return Player.ObjectGrabability.OneHand;
             //}
             //else
             //{
-                // Do default behaviour otherwise
-                //return orig(self, obj);
+            // Do default behaviour otherwise
+            //return orig(self, obj);
             //}
-           
+
         }
 
         // Implement MeanLizards
