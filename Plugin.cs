@@ -15,6 +15,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using Pkuyo.Wanderer.Feature;
 using Pkuyo.Wanderer.Cosmetic;
+using IL;
 
 namespace NuclearPasta.TheAmbidextrous
 {
@@ -29,6 +30,10 @@ namespace NuclearPasta.TheAmbidextrous
         public static readonly PlayerFeature<bool> DualWielding = PlayerBool("ambidexterity/dual_wield");
         //public static readonly PlayerFeature<bool> ObjectSwallowEffects = PlayerBool("ambidexterity/swallow_object");
         public static readonly PlayerFeature<bool> DualEnergyCell = PlayerBool("ambidexterity/dual_energycell");
+        //public static readonly PlayerFeature<bool> DoubleJump = PlayerBool("ambidexterity/double_jump");
+        //public static readonly PlayerFeature<bool> Rebirth = PlayerBool("ambidexterity/rebirth");
+        //public PlayerFeature<bool> playerFeature;
+        //public int climbDuration = 0;
 
 
 
@@ -44,12 +49,85 @@ namespace NuclearPasta.TheAmbidextrous
             On.Player.Grabability += DoubleEnergyCell;
             //On.Player.SwallowObject += new On.Player.hook_SwallowObject(Player_SwallowObject);
             On.Player.Grabability += DoubleSpear;
+            //On.Player.Jump += Player_Double_Jump;
+            //On.Player.Die += Phoenix;
+            On.Player.Update += new On.Player.hook_Update(this.OnWall);
         }
         
         // Load any resources, such as sprites or sounds
         private void LoadResources(RainWorld rainWorld)
         {
         }
+
+        //private void OnWall(On.Player.orig_Update orig, Player self, bool eu)
+        //{
+            //if (self.slugcatStats.name.value == "The Ambidextrous")
+            //{
+               // orig.Invoke(self, eu);
+               // bool flag2;
+               // bool flag = this.playerFeature.TryGet(self, out flag2) && flag2;
+               // bool flag3 = flag;
+               // if (flag3)
+               // {
+                  //  bool flag4 = self.bodyMode == Player.BodyModeIndex.WallClimb;
+                   // if (flag4)
+                   // {
+                       // self.customPlayerGravity = 0.01f;
+                       // self.mainBodyChunk.lastPos = self.mainBodyChunk.pos;
+                       // self.mainBodyChunk.vel.y = 0f;
+                       // self.animation = Player.AnimationIndex.DownOnFours;
+                       // bool flag5 = this.climbDuration < 20;
+                       // if (flag5)
+                       // {
+                           // bool flag6 = self.input[0].y > 0;
+                           // if (flag6)
+                           // {
+                               // this.climbDuration++;
+                               // self.mainBodyChunk.vel.y = Mathf.Lerp((float)(10 * self.input[0].y), 0f, 0.075f * (float)this.climbDuration);
+                           // }
+                           // else
+                           // {
+                               // this.climbDuration = Mathf.Clamp(this.climbDuration - 1, 0, 10);
+                          //  }
+                       // }
+                       // else
+                       // {
+                           // this.climbDuration = 0;
+                           // self.mainBodyChunk.vel.y = 0f;
+                        //}
+                    //}
+                    else
+                    //{
+                    //    self.customPlayerGravity = self.room.gravity;
+                    //}
+                //}
+            //}
+        //}
+
+        //private void Phoenix(On.Player.orig_Die orig, Player self)
+        //{
+        //bool wasDead = self.dead;
+        //if (!wasDead && self.dead && Rebirth.TryGet(self, out bool playerisdead) && playerisdead)
+        //{ 
+
+        //On.Player.
+
+        //}
+        //}
+
+        //private void Player_Double_Jump(On.Player.orig_Jump orig, Player self)
+        //{
+        //orig(self);
+
+        //if (DoubleJump.TryGet(self, out var power) && self.lowerBodyFramesOffGround > 0 && self.upperBodyFramesOffGround > 0 && self.input[0].jmp == true)
+        //{
+
+        //if ()
+        //{
+
+        //}
+        //}
+        //}
 
         private Player.ObjectGrabability DoubleEnergyCell(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
         {
