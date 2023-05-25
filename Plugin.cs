@@ -32,8 +32,9 @@ namespace NuclearPasta.TheAmbidextrous
         public static readonly PlayerFeature<bool> DualEnergyCell = PlayerBool("ambidexterity/dual_energycell");
         //public static readonly PlayerFeature<bool> DoubleJump = PlayerBool("ambidexterity/double_jump");
         //public static readonly PlayerFeature<bool> Rebirth = PlayerBool("ambidexterity/rebirth");
-        //public PlayerFeature<bool> playerFeature;
-        //public int climbDuration = 0;
+        public static readonly PlayerFeature<bool> WallClimbing = PlayerBool("ambidexterity/wallclimb");
+        public PlayerFeature<bool> playerFeature;
+        public int climbDuration = 0;
 
 
 
@@ -59,50 +60,50 @@ namespace NuclearPasta.TheAmbidextrous
         {
         }
 
-        //private void OnWall(On.Player.orig_Update orig, Player self, bool eu)
-        //{
-            //if (self.slugcatStats.name.value == "The Ambidextrous")
-            //{
-               // orig.Invoke(self, eu);
-               // bool flag2;
-               // bool flag = this.playerFeature.TryGet(self, out flag2) && flag2;
-               // bool flag3 = flag;
-               // if (flag3)
-               // {
-                  //  bool flag4 = self.bodyMode == Player.BodyModeIndex.WallClimb;
-                   // if (flag4)
-                   // {
-                       // self.customPlayerGravity = 0.01f;
-                       // self.mainBodyChunk.lastPos = self.mainBodyChunk.pos;
-                       // self.mainBodyChunk.vel.y = 0f;
-                       // self.animation = Player.AnimationIndex.DownOnFours;
-                       // bool flag5 = this.climbDuration < 20;
-                       // if (flag5)
-                       // {
-                           // bool flag6 = self.input[0].y > 0;
-                           // if (flag6)
-                           // {
-                               // this.climbDuration++;
-                               // self.mainBodyChunk.vel.y = Mathf.Lerp((float)(10 * self.input[0].y), 0f, 0.075f * (float)this.climbDuration);
-                           // }
-                           // else
-                           // {
-                               // this.climbDuration = Mathf.Clamp(this.climbDuration - 1, 0, 10);
-                          //  }
-                       // }
-                       // else
-                       // {
-                           // this.climbDuration = 0;
-                           // self.mainBodyChunk.vel.y = 0f;
-                        //}
-                    //}
+        private void OnWall(On.Player.orig_Update orig, Player self, bool eu)
+        {
+            if (self.slugcatStats.name.value == "The Ambidextrous" && WallClimbing.TryGet(self, out bool wallclimbbool) && wallclimbbool)
+            {
+                orig.Invoke(self, eu);
+                bool flag2;
+                bool flag = this.playerFeature.TryGet(self, out flag2) && flag2;
+                bool flag3 = flag;
+                if (flag3)
+                {
+                    bool flag4 = self.bodyMode == Player.BodyModeIndex.WallClimb;
+                    if (flag4)
+                    {
+                        self.customPlayerGravity = 0.01f;
+                        self.mainBodyChunk.lastPos = self.mainBodyChunk.pos;
+                        self.mainBodyChunk.vel.y = 0f;
+                        self.animation = Player.AnimationIndex.DownOnFours;
+                        bool flag5 = this.climbDuration < 20;
+                        if (flag5)
+                        {
+                            bool flag6 = self.input[0].y > 0;
+                            if (flag6)
+                            {
+                                this.climbDuration++;
+                                self.mainBodyChunk.vel.y = Mathf.Lerp((float)(10 * self.input[0].y), 0f, 0.075f * (float)this.climbDuration);
+                            }
+                            else
+                            {
+                                this.climbDuration = Mathf.Clamp(this.climbDuration - 1, 0, 10);
+                            }
+                        }
+                        else
+                        {
+                            this.climbDuration = 0;
+                            self.mainBodyChunk.vel.y = 0f;
+                        }
+                    }
                     else
-                    //{
-                    //    self.customPlayerGravity = self.room.gravity;
-                    //}
-                //}
-            //}
-        //}
+                    {
+                        self.customPlayerGravity = self.room.gravity;
+                    }
+                }
+            }
+        }
 
         //private void Phoenix(On.Player.orig_Die orig, Player self)
         //{
