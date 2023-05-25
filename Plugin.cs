@@ -86,17 +86,17 @@ namespace NuclearPasta.TheAmbidextrous
         private Player.ObjectGrabability DoubleEnergyCell(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
         {
 
-            bool flag = obj is Weapon;
+            bool flag = obj is EnergyCell;
             if (flag)
             {
-                bool flag2 = DualWielding.TryGet(self, out bool dualwieldbool) && dualwieldbool;
+                bool flag2 = DualEnergyCell.TryGet(self, out bool dualenergycellbool) && dualenergycellbool;
                 if (flag2)
                 {
                     return (Player.ObjectGrabability)1;
                 }
             }
             return orig.Invoke(self, obj);
-
+            bool flag2 = DualWielding.TryGet(self, out bool dualwieldbool) && dualwieldbool;
             //if this is not my scug, then default behavior.
             //if it is my scug and it is the object type of EnergyCell then change the grabability to only using one hand
             //bool flag = DualEnergyCell.TryGet(self, out bool dualenergycellbool) && dualenergycellbool;
@@ -116,7 +116,7 @@ namespace NuclearPasta.TheAmbidextrous
         private Player.ObjectGrabability DoubleSpear(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
         {
 
-            bool flag = obj is Weapon;
+            bool flag = obj is Spear;
             if (flag)
             {
                 bool flag2 = DualWielding.TryGet(self, out bool dualwieldbool) && dualwieldbool;
