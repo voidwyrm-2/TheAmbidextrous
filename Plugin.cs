@@ -96,7 +96,6 @@ namespace NuclearPasta.TheAmbidextrous
                 }
             }
             return orig.Invoke(self, obj);
-            bool flag2 = DualWielding.TryGet(self, out bool dualwieldbool) && dualwieldbool;
             //if this is not my scug, then default behavior.
             //if it is my scug and it is the object type of EnergyCell then change the grabability to only using one hand
             //bool flag = DualEnergyCell.TryGet(self, out bool dualenergycellbool) && dualenergycellbool;
