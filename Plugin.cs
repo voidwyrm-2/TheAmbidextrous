@@ -33,7 +33,7 @@ namespace NuclearPasta.TheAmbidextrous
         //public static readonly PlayerFeature<bool> DoubleJump = PlayerBool("ambidexterity/double_jump");
         //public static readonly PlayerFeature<bool> Rebirth = PlayerBool("ambidexterity/rebirth");
         //public static readonly PlayerFeature<bool> WallClimbing = PlayerBool("ambidexterity/wallclimb");
-        public static readonly PlayerFeature<bool> BackSpear = PlayerBool("ambidexterity/BackSpear");
+        //public static readonly PlayerFeature<bool> BackSpear = PlayerBool("ambidexterity/BackSpear");
 
 
 
@@ -52,7 +52,7 @@ namespace NuclearPasta.TheAmbidextrous
             //On.Player.Jump += Player_Double_Jump;
             //On.Player.Die += Phoenix;
             //On.Player.Update += new On.Player.hook_Update(this.OnWall);
-            On.Player.ctor += Player_BackSpear_ctor;
+            //On.Player.ctor += Player_BackSpear_ctor;
         }
         
         // Load any resources, such as sprites or sounds
@@ -60,13 +60,13 @@ namespace NuclearPasta.TheAmbidextrous
         {
         }
 
-        private static void Player_BackSpear_ctor(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
-        {
-            orig(self, abstractCreature, world);
-
-            if (BackSpear.TryGet(self, out var hasBackSpear) && hasBackSpear)
-                self.spearOnBack ??= new Player.SpearOnBack(self);
-        }
+        //private static void Player_BackSpear_ctor(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
+        //{
+        //    orig(self, abstractCreature, world);
+        //
+         //   if (BackSpear.TryGet(self, out var hasBackSpear) && hasBackSpear)
+        //        self.spearOnBack ??= new Player.SpearOnBack(self);
+        //}
 
         //private void Phoenix(On.Player.orig_Die orig, Player self)
         //{
