@@ -214,11 +214,8 @@ namespace NuclearPasta.TheAmbidextrous
         {
             public FoodOnBack(Player owner)
             {
-                if (owner.slugcatStats.name.value == "The Ambidextrous")
-                {
                     this.owner = owner;
                     this.inFrontOfObjects = -1;
-                }
             }
 
             public bool HasAFood
