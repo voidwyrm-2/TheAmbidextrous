@@ -51,6 +51,7 @@ namespace NuclearPasta.TheAmbidextrous
             //On.Player.Jump += Player_Double_Jump;
             //On.Player.Die += Phoenix;
             //On.Player.Update += new On.Player.hook_Update(this.OnWall);
+            //On.Player.SwallowObject += Player_OutsiderFoodEffects;
         }
         
         // Load any resources, such as sprites or sounds
