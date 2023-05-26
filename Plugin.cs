@@ -33,6 +33,7 @@ namespace NuclearPasta.TheAmbidextrous
         //public static readonly PlayerFeature<bool> DoubleJump = PlayerBool("ambidexterity/double_jump");
         //public static readonly PlayerFeature<bool> Rebirth = PlayerBool("ambidexterity/rebirth");
         //public static readonly PlayerFeature<bool> WallClimbing = PlayerBool("ambidexterity/wallclimb");
+        public static readonly PlayerFeature<bool> BackSpear = PlayerBool("ambidexterity/BackSpear");
 
 
 
@@ -51,11 +52,20 @@ namespace NuclearPasta.TheAmbidextrous
             //On.Player.Jump += Player_Double_Jump;
             //On.Player.Die += Phoenix;
             //On.Player.Update += new On.Player.hook_Update(this.OnWall);
+            On.Player.ctor += Player_BackSpear_ctor;
         }
         
         // Load any resources, such as sprites or sounds
         private void LoadResources(RainWorld rainWorld)
         {
+        }
+
+        private static void Player_BackSpear_ctor(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
+        {
+            orig(self, abstractCreature, world);
+
+            if (BackSpear.TryGet(self, out var hasBackSpear) && hasBackSpear)
+                self.spearOnBack ??= new Player.SpearOnBack(self);
         }
 
         //private void Phoenix(On.Player.orig_Die orig, Player self)
@@ -198,6 +208,271 @@ namespace NuclearPasta.TheAmbidextrous
                 room.PlaySound(SoundID.Bomb_Explode, pos);
                 room.InGameNoise(new Noise.InGameNoise(pos, 9000f, self, 1f));
             }
+        }
+
+        public class FoodOnBack
+        {
+            public FoodOnBack(Player owner)
+            {
+                if (owner.slugcatStats.name.value == "The Ambidextrous")
+                {
+                    this.owner = owner;
+                    this.inFrontOfObjects = -1;
+                }
+            }
+
+            public bool HasAFood
+            {
+                get
+                {
+                    return this.spear != null;
+                }
+            }
+
+            public void Update() //bool eu
+            {
+                if (this.spear == null && this.counter > 20)
+                {
+                    //ON SECOND THOUGHT, WE SHOULD ONLY SWAP FOOD WITH OUR OFF HAND
+                    //for (int i = 0; i < 2; i++)
+                    int i = 1;
+
+                    //SMALL TWEAKS. ALLOW BACK FOOD STORAGE IF OUR OTHER HAND IS EMPTY
+                    if (this.owner.grasps[0] != null && this.owner.grasps[1] == null)
+                        i = 0;
+
+                    if (this.owner.grasps[i] != null && this.owner.grasps[i].grabbed is PhysicalObject && this.owner.grasps[i].grabbed is IPlayerEdible && this.owner.Grabability(this.owner.grasps[i].grabbed as PhysicalObject) == Player.ObjectGrabability.OneHand)
+                    {
+                        //WHY DON'T WE DO MOST OF THIS DOWN THERE?
+                        //this.owner.bodyChunks[0].pos += Custom.DirVec(this.owner.grasps[i].grabbed.firstChunk.pos, this.owner.bodyChunks[0].pos) * 2f;
+                        this.FoodToBack(this.owner.grasps[i].grabbed as PhysicalObject);
+                        //this.counter = 0;
+                        //break;
+                    }
+                }
+            }
+
+
+            public void GraphicsModuleUpdated(bool actuallyViewed, bool eu)
+            {
+                if (this.spear == null)
+                    return;
+
+                if (this.spear.slatedForDeletetion || this.spear.grabbedBy.Count > 0)
+                {
+                    if (this.abstractStick != null)
+                        this.abstractStick.Deactivate();
+                    this.spear = null;
+                    return;
+                }
+                Vector2 vector = this.owner.mainBodyChunk.pos;
+                Vector2 vector2 = this.owner.bodyChunks[1].pos;
+                if (this.owner.graphicsModule != null)
+                {
+                    vector = Vector2.Lerp((this.owner.graphicsModule as PlayerGraphics).drawPositions[0, 0], (this.owner.graphicsModule as PlayerGraphics).head.pos, 0.2f);
+                    vector2 = (this.owner.graphicsModule as PlayerGraphics).drawPositions[1, 0];
+                }
+                Vector2 vector3 = Custom.DirVec(vector2, vector);
+                if (this.owner.Consious && this.owner.bodyMode != Player.BodyModeIndex.ZeroG && this.owner.EffectiveRoomGravity > 0f)
+                {
+                    //NO FLIP
+                    //OKAY MAYBE SOME FLIP...
+                    if (this.owner.bodyMode == Player.BodyModeIndex.Default && this.owner.animation == Player.AnimationIndex.None && this.owner.standing && this.owner.bodyChunks[1].pos.y < this.owner.bodyChunks[0].pos.y - 6f)
+                        this.flip = Custom.LerpAndTick(this.flip, (float)this.owner.input[0].x * 0.3f, 0.05f, 0.02f);
+                    else if (this.owner.bodyMode == Player.BodyModeIndex.Stand && this.owner.input[0].x != 0)
+                        this.flip = Custom.LerpAndTick(this.flip, (float)this.owner.input[0].x, 0.02f, 0.1f);
+                    else
+                        this.flip = Custom.LerpAndTick(this.flip, (float)this.owner.flipDirection * Mathf.Abs(vector3.x), 0.15f, 0.16666667f);
+                    //OVERLAP??? --I DON'T THINK NORMAL OBJECTS HAVE THIS
+                    //this.spear.ChangeOverlap(vector3.y < -0.1f && this.owner.bodyMode != Player.BodyModeIndex.ClimbingOnBeam);
+                    //THEY DO NOW :)
+                    //this.ChangeOverlap(vector3.y < -0.1f && this.owner.bodyMode != Player.BodyModeIndex.ClimbingOnBeam);
+                    //Debug.Log("----FOOD OVERLAP!: ");
+                    //this.ChangeOverlap(true);
+                    this.ChangeOverlap(false); //OKAY... SEEMS LIKE THIS SHOULD JUST BE FALSE ALL THE TIME
+                }
+                else
+                {
+                    this.flip = Custom.LerpAndTick(this.flip, 0f, 0.15f, 0.14285715f);
+                    // this.spear.setRotation = new Vector2?(vector3 - Custom.PerpendicularVector(vector3) * 0.9f);
+                    //this.spear.ChangeOverlap(false);
+                    this.ChangeOverlap(false);
+
+                }
+                this.spear.firstChunk.MoveFromOutsideMyUpdate(eu, Vector2.Lerp(vector2, vector, 0.6f) - Custom.PerpendicularVector(vector2, vector) * 7.5f * this.flip);
+                this.spear.firstChunk.vel = this.owner.mainBodyChunk.vel;
+                //this.spear.rotationSpeed = 0f;
+            }
+
+
+            public void FoodToHand(bool eu)
+            {
+                if (this.spear == null)
+                    return;
+                // for (int i = 0; i < 2; i++)
+                // {
+                // if (this.owner.grasps[i] != null && this.owner.Grabability(this.owner.grasps[i].grabbed) >= Player.ObjectGrabability.BigOneHand)
+                // return;
+                // }
+
+                if (this.owner.grasps[1] != null)
+                    return;
+
+                int num = -1;
+                int num2 = 0;
+                while (num2 < 2 && num == -1)
+                {
+                    if (this.owner.grasps[num2] == null)
+                        num = num2;
+                    num2++;
+                }
+                if (num == -1)
+                    return;
+                if (this.owner.graphicsModule != null)
+                    this.spear.firstChunk.MoveFromOutsideMyUpdate(eu, (this.owner.graphicsModule as PlayerGraphics).hands[num].pos);
+                //RETURN OUR ORIGINAL COLLISION
+                //this.spear.collisionLayer = this.origCollisionLayer;
+                this.spear.ChangeCollisionLayer(this.origCollisionLayer);
+                this.spear.bodyChunks[0].collideWithTerrain = true;
+                this.ChangeOverlap(true);
+                this.owner.SlugcatGrab(this.spear, num);
+                this.spear = null;
+                this.interactionLocked = true;
+                this.owner.noPickUpOnRelease = 20;
+                this.owner.room.PlaySound(SoundID.Slugcat_Pick_Up_Spear, this.owner.mainBodyChunk);
+                this.owner.room.PlaySound(SoundID.Scavenger_Knuckle_Hit_Ground, this.owner.mainBodyChunk);
+                if (this.abstractStick != null)
+                {
+                    this.abstractStick.Deactivate();
+                    this.abstractStick = null;
+                }
+            }
+
+
+            //MADE IT A BOOLEAN SO WE CAN TELL IF IT RAN TO COMPLETION OR WAS CANCELED
+            public bool FoodToBack(PhysicalObject spr)
+            {
+                if (this.spear != null)
+                    return false;
+
+                //IF IT'S A BATFLY, KILL IT. IF IT'S A DIFFERENT LIVING CREATURE, DON'T STOW IT
+                if (spr is Creature && (spr as Creature).dead == false)
+                {
+                    if (spr is Fly)
+                        (spr as Fly).Die();
+                    else
+                        return false;
+                }
+
+                if (spr is Mushroom)
+                    (spr as Mushroom).growPos = null;
+                if (spr is KarmaFlower)
+                    (spr as KarmaFlower).growPos = null;
+                if (spr is SlimeMold)
+                    (spr as SlimeMold).stuckPos = null;
+
+                //THIS USED TO HAPPEN IN UPDATE() BUT I MOVED IT DOWN HERE
+                this.owner.bodyChunks[0].pos += Custom.DirVec(spr.firstChunk.pos, this.owner.bodyChunks[0].pos) * 2f;
+                this.counter = 0;
+
+                for (int i = 0; i < 2; i++)
+                {
+                    if (this.owner.grasps[i] != null && this.owner.grasps[i].grabbed == spr)
+                    {
+                        this.owner.ReleaseGrasp(i);
+                        break;
+                    }
+                }
+                this.spear = spr;
+                // this.spear.ChangeMode(Weapon.Mode.OnBack); --A FRUIT IS NOT A WEAPON
+                //MAKE THE FOOD NOT COLLIDE WITH US
+                this.origCollisionLayer = this.spear.collisionLayer;
+                //this.spear.collisionLayer = 2; //LIKE KARMA FLOWERS
+                this.spear.ChangeCollisionLayer(0); //0 - OKAY BUT THIS LAYER STILL COLLIDES WITH TERRAIN AND THATS WEIRD
+                this.spear.bodyChunks[0].collideWithTerrain = false;
+                this.ChangeOverlap(false);
+                this.interactionLocked = true;
+                this.owner.noPickUpOnRelease = 20;
+                this.owner.room.PlaySound(SoundID.Slugcat_Stash_Spear_On_Back, this.owner.mainBodyChunk);
+                this.owner.room.PlaySound(SoundID.Scavenger_Knuckle_Hit_Ground, this.owner.mainBodyChunk);
+                if (this.spear is PlayerCarryableItem) //FLASHY
+                    (this.spear as PlayerCarryableItem).Blink();
+                if (this.abstractStick != null)
+                    this.abstractStick.Deactivate();
+                this.abstractStick = new Player.AbstractOnBackStick(this.owner.abstractPhysicalObject, spr.abstractPhysicalObject);
+
+
+                return true; //EVERYTHINGS A-OKAY HERE, BOSS!
+                             //this.owner.graphicsModule.BringSpritesToFront();
+            }
+
+
+            public void DropFood()
+            {
+                if (this.spear == null)
+                    return;
+
+                this.spear.firstChunk.vel = this.owner.mainBodyChunk.vel + Custom.RNV() * 3f * UnityEngine.Random.value;
+                // this.spear.ChangeMode(Weapon.Mode.Free);
+                //this.spear.collisionLayer = this.origCollisionLayer;
+                this.spear.ChangeCollisionLayer(this.origCollisionLayer);
+                this.spear.bodyChunks[0].collideWithTerrain = true;
+                this.spear = null;
+                if (this.abstractStick != null)
+                {
+                    this.abstractStick.Deactivate();
+                    this.abstractStick = null;
+                }
+            }
+
+            //BARROWING THIS FROM WEAPON.CS
+            public virtual void NewRoom(Room newRoom)
+            {
+                //SHRUG
+                this.inFrontOfObjects = -1;
+
+            }
+
+            public void ChangeOverlap(bool newOverlap)
+            {
+                /*
+                if (this.inFrontOfObjects == ((!newOverlap) ? 0 : 1) || this.owner.room == null)
+                {
+                    return;
+                }
+                for (int i = 0; i < this.owner.room.game.cameras.Length; i++)
+                {
+                    this.owner.room.game.cameras[i].MoveObjectToContainer(this as IDrawable, this.owner.room.game.cameras[i].ReturnFContainer((!newOverlap) ? "Background" : "Items"));
+                }
+                this.inFrontOfObjects = ((!newOverlap) ? 0 : 1);
+                */
+                //MAYBE WE JUST GO AS SIMPLE AS POSSIBLE?
+                for (int i = 0; i < this.owner.room.game.cameras.Length; i++)
+                {
+                    //DIFFERENT OBJECT TYPES NEED TO PASS IN DIFFERENT THINGS TO SWAP LAYERS CORRECTLY
+                    IDrawable objTarget; // = this.spear;
+                    if (this.spear is IDrawable)
+                        objTarget = this.spear as IDrawable;
+                    else
+                        objTarget = this.spear.graphicsModule;
+                    this.owner.room.game.cameras[i].MoveObjectToContainer(objTarget, this.owner.room.game.cameras[i].ReturnFContainer((!newOverlap) ? "Background" : "Items"));
+                }
+                //IF IT'S LIKE A CREATURE OR SOMETHING, RESET IT'S GRAPHICS MODULE
+                //if (newOverlap == false && this.spear.graphicsModule != null)
+                //	this.spear.graphicsModule.Reset();
+            }
+
+            public Player owner;
+            // public Spear spear;
+            public PhysicalObject spear;
+            public bool increment;
+            public int counter;
+            public float flip;
+            public bool interactionLocked;
+            public Player.AbstractOnBackStick abstractStick;
+            //A NEW ONE
+            public int origCollisionLayer;
+            public int inFrontOfObjects;
         }
     }
 }
