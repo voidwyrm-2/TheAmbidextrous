@@ -65,7 +65,7 @@ namespace NuclearPasta.TheAmbidextrous
         private void Player_SwallowObject(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
             orig.Invoke(self, grasp);
-            bool flag = ModManager.MSC && self.slugcatStats.name.value == "The Ambidextrous" /*&& self.FoodInStomach > 0*/;
+            bool flag = ModManager.MSC && self.slugcatStats.name.value == "Ambidextrous" /*&& self.FoodInStomach > 0*/;
             if (flag)
             {
                 AbstractPhysicalObject objectInStomach = self.objectInStomach;
@@ -82,7 +82,7 @@ namespace NuclearPasta.TheAmbidextrous
         private void Player_SwallowObject2(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
             orig.Invoke(self, grasp);
-            bool flag = ModManager.MSC && self.slugcatStats.name.value == "The Ambidextrous" /*&& self.FoodInStomach > 0*/;
+            bool flag = ModManager.MSC && self.slugcatStats.name.value == "Ambidextrous" /*&& self.FoodInStomach > 0*/;
             if (flag)
             {
                 AbstractPhysicalObject objectInStomach = self.objectInStomach;
@@ -99,7 +99,7 @@ namespace NuclearPasta.TheAmbidextrous
         private void Player_SwallowObject3(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
             orig.Invoke(self, grasp);
-            bool flag = ModManager.MSC && self.slugcatStats.name.value == "The Ambidextrous" /*&& self.FoodInStomach > 0*/;
+            bool flag = ModManager.MSC && self.slugcatStats.name.value == "Ambidextrous" /*&& self.FoodInStomach > 0*/;
             if (flag)
             {
                 AbstractPhysicalObject objectInStomach = self.objectInStomach;
