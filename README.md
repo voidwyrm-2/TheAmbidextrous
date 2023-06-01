@@ -10,3 +10,5 @@ start of the conversion: https://discord.com/channels/291184728944410624/3051391
 and Slime_Cubed for making me both more and less confused than I already was
 conversion with Slime_Cubed: https://discord.com/channels/291184728944410624/431534164932689921/1110263399885045810
 (for those who need to reference something from there)
+Thanks spinch for helping me to fix my artificer crafting hooks,
+start of the conversion: https://discord.com/channels/291184728944410624/431534164932689921/1113688346829541437
