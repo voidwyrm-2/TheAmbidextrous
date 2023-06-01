@@ -34,7 +34,7 @@ namespace NuclearPasta.TheAmbidextrous
         //public static readonly PlayerFeature<bool> Rebirth = PlayerBool("ambidexterity/rebirth");
         //public static readonly PlayerFeature<bool> WallClimbing = PlayerBool("ambidexterity/wallclimb");
 
-
+        static readonly SlugcatStats.Name MySlugcat = new SlugcatStats.Name("Ambidextrous");
 
         // Add hooks
         public void OnEnable()
@@ -55,6 +55,9 @@ namespace NuclearPasta.TheAmbidextrous
             On.Player.SwallowObject += new On.Player.hook_SwallowObject(this.Player_SwallowObject1);
             On.Player.SwallowObject += new On.Player.hook_SwallowObject(this.Player_SwallowObject2);
             On.Player.SwallowObject += new On.Player.hook_SwallowObject(this.Player_SwallowObject3);
+            On.Player.SwallowObject += new On.Player.hook_SwallowObject(this.Player_SwallowObject4);
+            On.Player.SwallowObject += new On.Player.hook_SwallowObject(this.Player_SwallowObject5);
+            On.Player.SwallowObject += new On.Player.hook_SwallowObject(this.Player_SwallowObject6);
         }
         
         // Load any resources, such as sprites or sounds
@@ -65,7 +68,7 @@ namespace NuclearPasta.TheAmbidextrous
         private void Player_SwallowObject1(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
             orig.Invoke(self, grasp);
-            if (ModManager.MSC && self.slugcatStats.name.value == "Ambidextrous" && self.objectInStomach.type == MoreSlugcatsEnums.AbstractObjectType.SingularityBomb /*&& self.FoodInStomach > 0*/)
+            if (ModManager.MSC && self.SlugCatClass == MySlugcat && self.objectInStomach.type == MoreSlugcatsEnums.AbstractObjectType.SingularityBomb /*&& self.FoodInStomach > 0*/)
             {
                 self.objectInStomach = new AbstractConsumable(self.room.world, AbstractPhysicalObject.AbstractObjectType.ScavengerBomb, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
                 self.AddFood(3);
@@ -76,7 +79,7 @@ namespace NuclearPasta.TheAmbidextrous
         private void Player_SwallowObject2(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
             orig.Invoke(self, grasp);
-            if (ModManager.MSC && self.slugcatStats.name.value == "Ambidextrous" && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb /*&& self.FoodInStomach > 0*/)
+            if (ModManager.MSC && self.SlugCatClass == MySlugcat && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb /*&& self.FoodInStomach > 0*/)
             {
                 self.objectInStomach = new AbstractConsumable(self.room.world, AbstractPhysicalObject.AbstractObjectType.Rock, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
                 self.AddFood(2);
@@ -87,11 +90,43 @@ namespace NuclearPasta.TheAmbidextrous
         private void Player_SwallowObject3(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
             orig.Invoke(self, grasp);
-            if (ModManager.MSC && self.slugcatStats.name.value == "Ambidextrous" && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.FirecrackerPlant /*&& self.FoodInStomach > 0*/)
+            if (ModManager.MSC && self.SlugCatClass == MySlugcat && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.FirecrackerPlant /*&& self.FoodInStomach > 0*/)
             {
                 self.objectInStomach = new AbstractConsumable(self.room.world, AbstractPhysicalObject.AbstractObjectType.FlyLure, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
                 self.AddFood(1);
                 base.Logger.LogDebug("Chef Mung Daal: noice3");
+            }
+        }
+
+        private void Player_SwallowObject4(On.Player.orig_SwallowObject orig, Player self, int grasp)
+        {
+            orig.Invoke(self, grasp);
+            if (ModManager.MSC && self.SlugCatClass == MySlugcat && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.Lantern /*&& self.FoodInStomach > 0*/)
+            {
+                self.objectInStomach = new AbstractConsumable(self.room.world, MoreSlugcatsEnums.AbstractObjectType.GooieDuck, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
+                base.Logger.LogDebug("Chef Mung Daal: noice4");
+            }
+        }
+
+        private void Player_SwallowObject5(On.Player.orig_SwallowObject orig, Player self, int grasp)
+        {
+            orig.Invoke(self, grasp);
+            if (ModManager.MSC && self.SlugCatClass == MySlugcat && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.OverseerCarcass /*&& self.FoodInStomach > 0*/)
+            {
+                self.objectInStomach = new AbstractConsumable(self.room.world, AbstractPhysicalObject.AbstractObjectType.DataPearl, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
+                self.AddFood(7);
+                base.Logger.LogDebug("Chef Mung Daal: noice5");
+            }
+        }
+
+        private void Player_SwallowObject6(On.Player.orig_SwallowObject orig, Player self, int grasp)
+        {
+            orig.Invoke(self, grasp);
+            if (ModManager.MSC && self.SlugCatClass == MySlugcat && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.BubbleGrass /*&& self.FoodInStomach > 0*/)
+            {
+                self.objectInStomach = new AbstractConsumable(self.room.world, AbstractPhysicalObject.AbstractObjectType.FlyLure, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
+                self.AddFood(2);
+                base.Logger.LogDebug("Chef Mung Daal: noice6");
             }
         }
 
