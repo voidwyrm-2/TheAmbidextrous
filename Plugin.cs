@@ -39,7 +39,7 @@ namespace NuclearPasta.TheAmbidextrous
         // Add hooks
         public void OnEnable()
         {
-            On.RainWorld.OnModsInit += Extras.WrapInit(LoadResources);
+            //On.RainWorld.OnModsInit += Extras.WrapInit(LoadResources);
 
             // Put your custom hooks here!
             On.Player.Jump += Player_Jump;
@@ -58,17 +58,34 @@ namespace NuclearPasta.TheAmbidextrous
             On.Player.SwallowObject += new On.Player.hook_SwallowObject(this.Player_SwallowObject4);
             //On.Player.SwallowObject += new On.Player.hook_SwallowObject(this.Player_SwallowObject5);
             On.Player.SwallowObject += new On.Player.hook_SwallowObject(this.Player_SwallowObject6);
+            //On.Player.ObjectEaten += Player_ObjectEaten;
+            On.Player.Grabability += DoubleCada;
         }
-        
-        // Load any resources, such as sprites or sounds
-        private void LoadResources(RainWorld rainWorld)
+
+        private Player.ObjectGrabability DoubleCada(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
         {
+            if (obj is Cicada && self.SlugCatClass == MySlugcat)
+            {
+                    return (Player.ObjectGrabability)1;
+            }
+            return orig.Invoke(self, obj);
         }
+
+        /*
+        private void Player_ObjectEaten(On.Player.orig_ObjectEaten orig, Player self, IPlayerEdible edible)
+        {
+            if (self.SlugCatClass == MySlugcat && edible.BitesLeft < 1 && edible.Edible.Equals(AbstractPhysicalObject.AbstractObjectType.DangleFruit))
+            {
+                self.AddQuarterFood();
+                self.AddQuarterFood();
+            }
+        }
+        */
 
         private void Player_SwallowObject1(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
             orig.Invoke(self, grasp);
-            if (ModManager.MSC && self.SlugCatClass == MySlugcat && self.objectInStomach.type == MoreSlugcatsEnums.AbstractObjectType.SingularityBomb /*&& self.FoodInStomach > 0*/)
+            if ( ModManager.MSC && self.SlugCatClass == MySlugcat && self.objectInStomach.type == MoreSlugcatsEnums.AbstractObjectType.SingularityBomb /*&& self.FoodInStomach > 0*/)
             {
                 self.objectInStomach = new AbstractConsumable(self.room.world, AbstractPhysicalObject.AbstractObjectType.ScavengerBomb, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
                 self.AddFood(3);
