@@ -52,12 +52,12 @@ namespace NuclearPasta.TheAmbidextrous
             //On.Player.Die += Phoenix;
             //On.Player.Update += new On.Player.hook_Update(this.OnWall);
             //On.Player.SwallowObject += Player_OutsiderFoodEffects;
-            On.Player.SwallowObject += new On.Player.hook_SwallowObject(this.Player_SwallowObject1);
-            On.Player.SwallowObject += new On.Player.hook_SwallowObject(this.Player_SwallowObject2);
-            On.Player.SwallowObject += new On.Player.hook_SwallowObject(this.Player_SwallowObject3);
-            On.Player.SwallowObject += new On.Player.hook_SwallowObject(this.Player_SwallowObject4);
-            //On.Player.SwallowObject += new On.Player.hook_SwallowObject(this.Player_SwallowObject5);
-            On.Player.SwallowObject += new On.Player.hook_SwallowObject(this.Player_SwallowObject6);
+            On.Player.SwallowObject += Player_SwallowObject1;
+            On.Player.SwallowObject += Player_SwallowObject2;
+            On.Player.SwallowObject += Player_SwallowObject3;
+            On.Player.SwallowObject += Player_SwallowObject4;
+            //On.Player.SwallowObject += Player_SwallowObject5;
+            On.Player.SwallowObject += Player_SwallowObject6;
             //On.Player.ObjectEaten += Player_ObjectEaten;
             On.Player.Grabability += DoubleCada;
         }
