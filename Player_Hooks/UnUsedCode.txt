@@ -1,0 +1,170 @@
+﻿//hooks declarations
+
+//On.Player.Jump += Player_Double_Jump;
+//On.Player.Die += Phoenix;
+
+//On.Player.Update += new On.Player.hook_Update(this.OnWall);
+//On.Player.SwallowObject += Player_OutsiderFoodEffects;
+
+//On.Player.ObjectEaten += Player_ObjectEaten;
+
+//On.Player.Update += Player_SpawnWithPearl;
+//On.Menu.MainMenu.eeCheck += MainMenu_eeCheck;
+//On.GameSession.ctor += GameSession_ctor;
+//On.Menu.MainMenu.Update += MainMenu_Update;
+//On.Menu.SlugcatSelectMenu.SlugcatUnlocked += SlugcatSelectMenu_SlugcatUnlocked;
+
+//On.Creature.Violence += Creature_Violence;
+
+//hooks declarations end
+
+
+
+
+//hooks code
+
+
+/*
+private void Creature_Violence(On.Creature.orig_Violence orig, Creature self, BodyChunk source, Vector2? directionAndMomentum, BodyChunk hitChunk, PhysicalObject.Appendage.Pos hitAppendage, Creature.DamageType type, float damage, float stunBonus)
+{
+    throw new NotImplementedException();
+}
+*/
+
+/*
+bool SecretScugUnlocked = false;
+private void MainMenu_Update(On.Menu.MainMenu.orig_Update orig, Menu.MainMenu self)
+{
+    orig(self);
+    //int menuinput = 0;
+    if (Input.anyKey)
+    {
+        if (Customeeinput == 5 && Input.GetKey(KeyCode.B) || Input.GetKey(KeyCode.R) || Input.GetKey(KeyCode.E) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
+        {
+            Customeeinput++;
+        }
+        else
+        {
+            Customeeinput = 0;
+        }
+    }
+    if (Customeeinput == 5)
+    {
+        self.manager.rainWorld.progression.miscProgressionData.currentlySelectedSinglePlayerSlugcat = SecretScug;
+        self.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.IntroRoll);
+        bool SecretScugUnlocked = true;
+    }
+}
+
+*/
+
+
+/*
+private bool SlugcatSelectMenu_SlugcatUnlocked(On.Menu.SlugcatSelectMenu.orig_SlugcatUnlocked orig, Menu.SlugcatSelectMenu self, SlugcatStats.Name i)
+{
+    throw new NotImplementedException();
+}
+*/
+
+/*
+private void MainMenu_eeCheck(On.Menu.MainMenu.orig_eeCheck orig, Menu.MainMenu self)
+{
+    orig(self);
+    if (Input.anyKey)
+    {
+        if (self.eeinput == 5 && Input.GetKey(KeyCode.B) || Input.GetKey(KeyCode.R) || Input.GetKey(KeyCode.E) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
+        {
+            self.eeinput++;
+        }
+        else
+        {
+            self.eeinput = 0;
+        }
+    }
+    if (self.eeinput == 5)
+    {
+        self.manager.rainWorld.progression.miscProgressionData.currentlySelectedSinglePlayerSlugcat = Breadlord;
+        self.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.IntroRoll);
+    }
+}
+*/
+
+/*
+private void Player_SpawnWithPearl(On.Player.orig_Update orig, Player self, bool eu)
+{
+    orig(self, eu);
+    if (self.SlugCatClass == MySlugcat && self.room.game.session is StoryGameSession story && story.saveState.cycleNumber == 0)
+    {
+        self.objectInStomach.type = AbstractPhysicalObject.AbstractObjectType.FirecrackerPlant;
+    }
+}
+*/
+
+
+/*
+private void Player_ObjectEaten(On.Player.orig_ObjectEaten orig, Player self, IPlayerEdible edible)
+{
+    if (self.SlugCatClass == MySlugcat && edible.BitesLeft < 1 && edible.Edible.Equals(AbstractPhysicalObject.AbstractObjectType.DangleFruit))
+    {
+        self.AddQuarterFood();
+        self.AddQuarterFood();
+    }
+}
+*/
+
+
+//private void Phoenix(On.Player.orig_Die orig, Player self)
+//{
+	//bool wasDead = self.dead;
+	//if (!wasDead && self.dead && Rebirth.TryGet(self, out bool playerisdead) && playerisdead)
+	//{ 
+		//On.Player.
+	//}
+//}
+
+//private void Player_Double_Jump(On.Player.orig_Jump orig, Player self)
+//{
+	//orig(self);
+
+	//if (DoubleJump.TryGet(self, out var power) && self.lowerBodyFramesOffGround > 0 && self.upperBodyFramesOffGround > 0 && self.input[0].jmp == true)
+	//{
+
+		//if ()
+		//{
+
+		//}
+	//}
+//}
+
+
+// Implement ExlodeOnDeath
+/*
+private void Player_Die(On.Player.orig_Die orig, Player self)
+{
+	bool wasDead = self.dead;
+
+	orig(self);
+
+	if(!wasDead && self.dead
+	&& ExplodeOnDeath.TryGet(self, out bool explode)
+	&& explode)
+	{
+		// Adapted from ScavengerBomb.Explode
+		var room = self.room;
+		var pos = self.mainBodyChunk.pos;
+		var color = self.ShortCutColor();
+		room.AddObject(new Explosion(room, self, pos, 7, 250f, 6.2f, 2f, 280f, 0.25f, self, 0.7f, 160f, 1f));
+		room.AddObject(new Explosion.ExplosionLight(pos, 280f, 1f, 7, color));
+		room.AddObject(new Explosion.ExplosionLight(pos, 230f, 1f, 3, new Color(1f, 1f, 1f)));
+		room.AddObject(new ExplosionSpikes(room, pos, 14, 30f, 9f, 7f, 170f, color));
+		room.AddObject(new ShockWave(pos, 330f, 0.045f, 5, false));
+
+		room.ScreenMovement(pos, default, 1.3f);
+		room.PlaySound(SoundID.Bomb_Explode, pos);
+		room.InGameNoise(new Noise.InGameNoise(pos, 9000f, self, 1f));
+	}
+}
+*/
+
+
+//hooks code end

@@ -16,51 +16,136 @@ using MonoMod.Cil;
 using Pkuyo.Wanderer.Feature;
 using Pkuyo.Wanderer.Cosmetic;
 using IL;
+using MonoMod.RuntimeDetour;
+using static Menu.Remix.MixedUI.OpTextBox;
+using UnityEngine.PlayerLoop;
+using DevInterface;
 
 namespace NuclearPasta.TheAmbidextrous
 {
-    [BepInPlugin(MOD_ID, "The Ambidextrous", "1.0.3")]
+    [BepInPlugin("dv.theambidextrous", "The Ambidextrous", "1.0.3")]
     class TheAmbidextrousMod : BaseUnityPlugin
     {
-        private const string MOD_ID = "dv.theambidextrous";
 
         public static readonly PlayerFeature<float> SuperJump = PlayerFloat("ambidexterity/super_jump");
-        public static readonly PlayerFeature<bool> ExplodeOnDeath = PlayerBool("ambidexterity/explode_on_death");
         public static readonly GameFeature<float> MeanLizards = GameFloat("ambidexterity/mean_lizards");
-        public static readonly PlayerFeature<bool> DualWielding = PlayerBool("ambidexterity/dual_wield");
-        //public static readonly PlayerFeature<bool> ObjectSwallowEffects = PlayerBool("ambidexterity/swallow_object");
-        public static readonly PlayerFeature<bool> DualEnergyCell = PlayerBool("ambidexterity/dual_energycell");
-        //public static readonly PlayerFeature<bool> DoubleJump = PlayerBool("ambidexterity/double_jump");
-        //public static readonly PlayerFeature<bool> Rebirth = PlayerBool("ambidexterity/rebirth");
-        //public static readonly PlayerFeature<bool> WallClimbing = PlayerBool("ambidexterity/wallclimb");
 
         static SlugcatStats.Name MySlugcat = new SlugcatStats.Name("Ambidextrous");
+        static SlugcatStats.Name SecretScug = new SlugcatStats.Name("Breadlord");
+        //int Customeeinput = 0; //do not delete
 
-        // Add hooks
+        //important storage bools
+        public static bool DoesPlayerExist;
+        public static bool IsPlayerAlive;
         public void OnEnable()
         {
-            //On.RainWorld.OnModsInit += Extras.WrapInit(LoadResources);
 
-            // Put your custom hooks here!
             On.Player.Jump += Player_Jump;
-            On.Player.Die += Player_Die;
             On.Lizard.ctor += Lizard_ctor;
             On.Player.Grabability += DoubleEnergyCell;
-            //On.Player.SwallowObject += new On.Player.hook_SwallowObject(Player_SwallowObject);
             On.Player.Grabability += DoubleSpear;
-            //On.Player.Jump += Player_Double_Jump;
-            //On.Player.Die += Phoenix;
-            //On.Player.Update += new On.Player.hook_Update(this.OnWall);
-            //On.Player.SwallowObject += Player_OutsiderFoodEffects;
             On.Player.SwallowObject += Player_SwallowObject1;
             On.Player.SwallowObject += Player_SwallowObject2;
             On.Player.SwallowObject += Player_SwallowObject3;
             On.Player.SwallowObject += Player_SwallowObject4;
-            //On.Player.SwallowObject += Player_SwallowObject5;
+            On.Player.SwallowObject += Player_SwallowObject5;
             On.Player.SwallowObject += Player_SwallowObject6;
-            //On.Player.ObjectEaten += Player_ObjectEaten;
+            
             On.Player.Grabability += DoubleCada;
+            
+            On.SlugcatStats.HiddenOrUnplayableSlugcat += PlayerSlugcatStats_HideSecretScug;
+            
+            //On.Player.Update += Player_OnMushrooms; //currently unused, do not delete
+            //On.Player.Update += Player_AbsoluteSaint;
+            On.Player.Grabability += Player_SpearOars;
+            On.Player.Update += Player_DoesPlayerExist;
+            //On.Player.Update += StartWithSpearOnBack;
         }
+
+        private void StartWithSpearOnBack(On.Player.orig_Update orig, Player self, bool eu)
+        {   
+            /*
+            if (self.spearOnBack != null)
+            {
+                
+                self.Spear = new AbstractSpear(room.world, null, new WorldCoordinate(room.abstractRoom.index, 350, 13, 0), room.game.GetNewID(), false);
+                room.abstractRoom.AddEntity(this.spear);
+                self.spear.realizedObject.firstChunk.HardSetPosition(self.mainBodyChunk.pos + new Vector2(-30f, 0f));
+                self.spearOnBack.SpearToBack(self.spear.realizedObject as Spear);
+                
+            }
+            */
+        }
+
+        private void Player_DoesPlayerExist(On.Player.orig_Update orig, Player self, bool eu)
+        {
+            if(self != null)
+            {
+                DoesPlayerExist = true;
+
+                if(DoesPlayerExist == true && self.Stunned == false && self.Consious == true)
+                {
+                    IsPlayerAlive = true;
+                }
+            }
+            
+            
+        }
+
+
+        private Player.ObjectGrabability Player_SpearOars(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
+        {
+
+            if (IsPlayerAlive == true && self.SlugCatClass == MySlugcat && self.submerged == true)
+            {
+                if(obj is Spear)
+                {
+                    
+                }
+            }
+            return orig(self, obj);
+        }
+
+
+
+        private void Player_AbsoluteSaint(On.Player.orig_Update orig, Player self, bool eu)
+        {
+            if ((Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftAlt)) /*self.input[0].jmp && self.input[0].pckp && self.input[0].thrw && self.input[0].x == 0 && self.input[0].y != 0*/ && self.KarmaIsReinforced == false && self.SlugCatClass == MySlugcat)
+            {
+                if (self.FoodInStomach >= 9)
+                {
+                    //self.KarmaIsReinforced = true;
+                    (self.abstractCreature.world.game.session as StoryGameSession).saveState.deathPersistentSaveData.reinforcedKarma = true;
+                    self.SubtractFood(9);
+                }
+            }
+            orig(self, eu);
+        }
+
+
+        //currently unused, do not delete
+        //private void Player_OnMushrooms(On.Player.orig_Update orig, Player self, bool eu)
+        //{
+        //    if (/*(Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift)) &&*/ (self.input[0].jmp && self.input[0].pckp && self.input[0].thrw && self.input[0].x == 0 && (self.input[0].y != 0 && self.input[0].y > -1)) && self.SlugCatClass == MySlugcat)
+        //    {
+        //        if (self.FoodInStomach > 0)
+        //        {
+        //            self.mushroomEffect = 1.0f;
+        //        }
+        //    }
+        //    orig(self, eu);
+        //}
+
+
+        private bool PlayerSlugcatStats_HideSecretScug(On.SlugcatStats.orig_HiddenOrUnplayableSlugcat orig, SlugcatStats.Name i)
+        {
+            if (/*!(SecretScugUnlocked = false) && */SecretScug == i)
+            {
+                return true;
+            }
+            return orig(i);
+        }
+
 
         private Player.ObjectGrabability DoubleCada(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
         {
@@ -68,24 +153,14 @@ namespace NuclearPasta.TheAmbidextrous
             {
                     return (Player.ObjectGrabability)1;
             }
-            return orig.Invoke(self, obj);
+            return orig(self, obj);
         }
 
-        /*
-        private void Player_ObjectEaten(On.Player.orig_ObjectEaten orig, Player self, IPlayerEdible edible)
-        {
-            if (self.SlugCatClass == MySlugcat && edible.BitesLeft < 1 && edible.Edible.Equals(AbstractPhysicalObject.AbstractObjectType.DangleFruit))
-            {
-                self.AddQuarterFood();
-                self.AddQuarterFood();
-            }
-        }
-        */
 
         private void Player_SwallowObject1(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
             orig.Invoke(self, grasp);
-            if ( ModManager.MSC && self.SlugCatClass == MySlugcat && self.objectInStomach.type == MoreSlugcatsEnums.AbstractObjectType.SingularityBomb /*&& self.FoodInStomach > 0*/)
+            if (ModManager.MSC && self.SlugCatClass == MySlugcat && self.objectInStomach.type == MoreSlugcatsEnums.AbstractObjectType.SingularityBomb && !(self.FoodInStomach == 14))
             {
                 self.objectInStomach = new AbstractConsumable(self.room.world, AbstractPhysicalObject.AbstractObjectType.ScavengerBomb, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
                 self.AddFood(3);
@@ -96,7 +171,7 @@ namespace NuclearPasta.TheAmbidextrous
         private void Player_SwallowObject2(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
             orig.Invoke(self, grasp);
-            if (ModManager.MSC && self.SlugCatClass == MySlugcat && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb /*&& self.FoodInStomach > 0*/)
+            if (self.SlugCatClass == MySlugcat && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb && !(self.FoodInStomach == 14))
             {
                 self.objectInStomach = new AbstractConsumable(self.room.world, AbstractPhysicalObject.AbstractObjectType.Rock, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
                 self.AddFood(2);
@@ -107,7 +182,7 @@ namespace NuclearPasta.TheAmbidextrous
         private void Player_SwallowObject3(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
             orig.Invoke(self, grasp);
-            if (ModManager.MSC && self.SlugCatClass == MySlugcat && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.FirecrackerPlant /*&& self.FoodInStomach > 0*/)
+            if (self.SlugCatClass == MySlugcat && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.FirecrackerPlant && !(self.FoodInStomach == 14))
             {
                 self.objectInStomach = new AbstractConsumable(self.room.world, AbstractPhysicalObject.AbstractObjectType.FlyLure, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
                 self.AddFood(1);
@@ -118,29 +193,28 @@ namespace NuclearPasta.TheAmbidextrous
         private void Player_SwallowObject4(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
             orig.Invoke(self, grasp);
-            if (ModManager.MSC && self.SlugCatClass == MySlugcat && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.Lantern /*&& self.FoodInStomach > 0*/)
+            if (ModManager.MSC && self.SlugCatClass == MySlugcat && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.Lantern && !(self.FoodInStomach == 14))
             {
                 self.objectInStomach = new AbstractConsumable(self.room.world, MoreSlugcatsEnums.AbstractObjectType.GooieDuck, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
                 base.Logger.LogDebug("Chef Mung Daal: noice4");
             }
         }
 
-
-       // private void Player_SwallowObject5(On.Player.orig_SwallowObject orig, Player self, int grasp)
-       // {
-       //     orig.Invoke(self, grasp);
-       //     if (ModManager.MSC && self.SlugCatClass == MySlugcat && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.OverseerCarcass /*&& self.FoodInStomach > 0*/)
-       //     {
-       //         self.objectInStomach = new AbstractConsumable(self.room.world, AbstractPhysicalObject.AbstractObjectType.DataPearl, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
-       //         self.AddFood(7);
-       //         base.Logger.LogDebug("Chef Mung Daal: noice5");
-       //     }
-       // }
+        private void Player_SwallowObject5(On.Player.orig_SwallowObject orig, Player self, int grasp)
+        {
+            orig.Invoke(self, grasp);
+            if (ModManager.MSC && self.SlugCatClass == MySlugcat && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.OverseerCarcass && !(self.FoodInStomach == 14))
+            {
+                self.objectInStomach = new AbstractConsumable(self.room.world, AbstractPhysicalObject.AbstractObjectType.DataPearl, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
+                self.AddFood(7);
+                base.Logger.LogDebug("Chef Mung Daal: noice5");
+            }
+        }
 
         private void Player_SwallowObject6(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
             orig.Invoke(self, grasp);
-            if (ModManager.MSC && self.SlugCatClass == MySlugcat && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.BubbleGrass /*&& self.FoodInStomach > 0*/)
+            if (self.SlugCatClass == MySlugcat && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.BubbleGrass && !(self.FoodInStomach == 14))
             {
                 self.objectInStomach = new AbstractConsumable(self.room.world, AbstractPhysicalObject.AbstractObjectType.FlyLure, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
                 self.AddFood(2);
@@ -148,44 +222,15 @@ namespace NuclearPasta.TheAmbidextrous
             }
         }
 
-        //private void Phoenix(On.Player.orig_Die orig, Player self)
-        //{
-        //bool wasDead = self.dead;
-        //if (!wasDead && self.dead && Rebirth.TryGet(self, out bool playerisdead) && playerisdead)
-        //{ 
-
-        //On.Player.
-
-        //}
-        //}
-
-        //private void Player_Double_Jump(On.Player.orig_Jump orig, Player self)
-        //{
-        //orig(self);
-
-        //if (DoubleJump.TryGet(self, out var power) && self.lowerBodyFramesOffGround > 0 && self.upperBodyFramesOffGround > 0 && self.input[0].jmp == true)
-        //{
-
-        //if ()
-        //{
-
-        //}
-        //}
-        //}
 
         private Player.ObjectGrabability DoubleEnergyCell(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
         {
 
-            bool flag = obj is EnergyCell;
-            if (flag)
+            if (obj is EnergyCell && self.SlugCatClass == MySlugcat)
             {
-                bool flag2 = DualEnergyCell.TryGet(self, out bool dualenergycellbool) && dualenergycellbool;
-                if (flag2)
-                {
                     return (Player.ObjectGrabability)1;
-                }
             }
-            return orig.Invoke(self, obj);
+            return orig(self, obj);
             //if this is not my scug, then default behavior.
             //if it is my scug and it is the object type of EnergyCell then change the grabability to only using one hand
             //bool flag = DualEnergyCell.TryGet(self, out bool dualenergycellbool) && dualenergycellbool;
@@ -196,25 +241,14 @@ namespace NuclearPasta.TheAmbidextrous
             //return orig(self, obj);
         }
 
-        //credit to Deathpits for being awesome and helping an idiot like me,
-        //Vigaro for a simplified version,
-        //and Slime_Cubed for making me both more and less confused than I already was
-        //start of the conversion: https://discord.com/channels/291184728944410624/305139167300550666/1110215808354889748
-        //conversion with Slime_Cubed: https://discord.com/channels/291184728944410624/431534164932689921/1110263399885045810
-        //(for those who need to reference something from there)
         private Player.ObjectGrabability DoubleSpear(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
         {
 
-            bool flag = obj is Spear;
-            if (flag)
+            if (obj is Spear && self.SlugCatClass == MySlugcat)
             {
-                bool flag2 = DualWielding.TryGet(self, out bool dualwieldbool) && dualwieldbool;
-                if (flag2)
-                {
                     return (Player.ObjectGrabability)1;
-                }
             }
-            return orig.Invoke(self, obj);
+            return orig(self, obj);
 
             //bool flag2 = DualWielding.TryGet(self, out bool dualwieldbool) && dualwieldbool;
             //if (self.slugcatStats.name.value == "The Ambidextrous" && obj is Weapon && flag2 == true)//if this is not my scug, then default behavior. if it is my scug and it is the object type of Weapon then change the grabability to only using one hand
@@ -240,6 +274,7 @@ namespace NuclearPasta.TheAmbidextrous
 
         }
 
+
         // Implement MeanLizards
         private void Lizard_ctor(On.Lizard.orig_ctor orig, Lizard self, AbstractCreature abstractCreature, World world)
         {
@@ -263,31 +298,5 @@ namespace NuclearPasta.TheAmbidextrous
             }
         }
 
-        // Implement ExlodeOnDeath
-        private void Player_Die(On.Player.orig_Die orig, Player self)
-        {
-            bool wasDead = self.dead;
-
-            orig(self);
-
-            if(!wasDead && self.dead
-                && ExplodeOnDeath.TryGet(self, out bool explode)
-                && explode)
-            {
-                // Adapted from ScavengerBomb.Explode
-                var room = self.room;
-                var pos = self.mainBodyChunk.pos;
-                var color = self.ShortCutColor();
-                room.AddObject(new Explosion(room, self, pos, 7, 250f, 6.2f, 2f, 280f, 0.25f, self, 0.7f, 160f, 1f));
-                room.AddObject(new Explosion.ExplosionLight(pos, 280f, 1f, 7, color));
-                room.AddObject(new Explosion.ExplosionLight(pos, 230f, 1f, 3, new Color(1f, 1f, 1f)));
-                room.AddObject(new ExplosionSpikes(room, pos, 14, 30f, 9f, 7f, 170f, color));
-                room.AddObject(new ShockWave(pos, 330f, 0.045f, 5, false));
-
-                room.ScreenMovement(pos, default, 1.3f);
-                room.PlaySound(SoundID.Bomb_Explode, pos);
-                room.InGameNoise(new Noise.InGameNoise(pos, 9000f, self, 1f));
-            }
-        }
     }
 }
