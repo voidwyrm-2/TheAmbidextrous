@@ -11,12 +11,6 @@
         </Reference>
     </ItemGroup>
     
-    <ItemGroup>
-      <Folder Include="Player_Hooks\Grasp_Hooks\" />
-      <Folder Include="Player_Hooks\Movement_Hooks\" />
-      <Folder Include="Player_Hooks\Stomach_Hooks\" />
-    </ItemGroup>
-    
     <Target Name="GenerateMod" AfterTargets="PostBuildEvent">
 		<ItemGroup>
 			<RemovePlugins Include="../mod/plugins/*.dll" />

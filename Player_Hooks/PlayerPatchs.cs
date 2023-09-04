@@ -1,0 +1,340 @@
+﻿using MonoMod.RuntimeDetour;
+using SlugBase.DataTypes;
+using SlugBase.Features;
+using SlugBase;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using UnityEngine;
+
+namespace TheAmbidextrous.Player_Hooks
+{
+    internal class PlayerPatchs
+    {
+        /*
+        public static ConditionalWeakTable<Player, PlayerModule> modules = new ConditionalWeakTable<Player, PlayerModule>();
+
+        public delegate bool orig_Player_CanPutSpearToBack(Player self);
+        static BindingFlags propFlags = BindingFlags.Instance | BindingFlags.Public;
+        static BindingFlags methodFlags = BindingFlags.Static | BindingFlags.Public;
+
+        public static void Patch()
+        {
+            On.Creature.SpitOutOfShortCut += Creature_SpitOutOfShortCut;
+
+            On.Player.ctor += Player_ctor;
+            On.Player.Update += Player_Update;
+            On.Player.MovementUpdate += Player_MovementUpdate;
+            On.Player.Jump += Player_Jump;
+            On.Player.SpearStick += Player_SpearStick;
+
+            On.Player.TossObject += Player_TossObject;
+
+            On.Player.Die += Player_Die;
+            On.Player.Destroy += Player_Destroy;
+
+            Hook player_get_CanPutSpearToBack_Hook = new Hook(typeof(Player).GetProperty("CanPutSpearToBack", propFlags).GetGetMethod(), typeof(PlayerPatchs).GetMethod("Player_get_CanPutSpearOnBack", methodFlags));
+        }
+
+        private static void Player_TossObject(On.Player.orig_TossObject orig, Player self, int grasp, bool eu)
+        {
+            if (modules.TryGetValue(self, out var module) && module.isStoryGamePlayer && module.ownDrones && self.grasps[grasp] != null && self.room != null)
+            {
+                Creature creature = self.grasps[grasp].grabbed as Creature;
+                if (creature != null && creature.dead && !DeathPersistentSaveDataPatch.GetUnitOfType<ScannedCreatureSaveUnit>().IsThisTypeScanned(creature.abstractCreature.creatureTemplate.type))
+                {
+                    CreatureScanner scanner = new CreatureScanner(creature, self.DangerPos + new Vector2(0, 60), self.room, module.laserColor, module);
+                    self.room.AddObject(scanner);
+                }
+            }
+            orig.Invoke(self, grasp, eu);
+        }
+
+        private static bool Player_SpearStick(On.Player.orig_SpearStick orig, Player self, Weapon source, float dmg, BodyChunk chunk, PhysicalObject.Appendage.Pos appPos, Vector2 direction)
+        {
+            bool result = orig.Invoke(self, source, dmg, chunk, appPos, direction);
+
+            if (modules.TryGetValue(self, out var module) && module.ownDrones)
+            {
+                if (module.playerDeathPreventer.DeathPreventCounter > 0 && module.playerDeathPreventer.AcceptableDamageCount >= 0) result = false;
+            }
+            return result;
+        }
+
+        public static bool Player_get_CanPutSpearOnBack(orig_Player_CanPutSpearToBack orig, Player self)
+        {
+            bool result = orig.Invoke(self);
+            if (modules.TryGetValue(self, out var module) && module.ownDrones)
+            {
+                result = result && Plugin.instance.config.canBackSpear.Value;
+            }
+            return result;
+        }
+
+        private static void Player_MovementUpdate(On.Player.orig_MovementUpdate orig, Player self, bool eu)
+        {
+            bool getModule = modules.TryGetValue(self, out var module) && module.ownDrones;
+            if (getModule && module.lockMovementInput)
+            {
+                self.input[0] = new Player.InputPackage();
+            }
+            orig.Invoke(self, eu);
+        }
+
+        private static void Player_Destroy(On.Player.orig_Destroy orig, Player self)
+        {
+            if (modules.TryGetValue(self, out var module) && module.ownDrones)
+            {
+                if (module.port.availableDroneCount != 0) module.port.ClearOutAllDrones();
+                module.playerDeathPreventer.AcceptableDamageCount = -1;
+                if (!self.room.game.cameras[0].hud.textPrompt.gameOverMode)
+                {
+                    self.room.game.GameOver(null);
+                }
+            }
+            orig.Invoke(self);
+        }
+
+        private static void Player_Die(On.Player.orig_Die orig, Player self)
+        {
+            if (modules.TryGetValue(self, out var module) && module.ownDrones && !self.dead)
+            {
+                if (module.playerDeathPreventer.canTakeDownThisDamage(self, "player die"))
+                {
+                    self.dead = false;
+                    self.aerobicLevel = 0f;
+                    return;
+                }
+            }
+
+            orig.Invoke(self);
+        }
+
+        private static void Player_Jump(On.Player.orig_Jump orig, Player self)
+        {
+            orig.Invoke(self);
+            if (modules.TryGetValue(self, out var module) && module.ownDrones)
+            {
+                self.jumpBoost *= 1.2f;
+            }
+        }
+
+        private static void Creature_SpitOutOfShortCut(On.Creature.orig_SpitOutOfShortCut orig, Creature self, IntVector2 pos, Room newRoom, bool spitOutAllSticks)
+        {
+            orig.Invoke(self, pos, newRoom, spitOutAllSticks);
+
+            Player player = self as Player;
+            if (player != null && modules.TryGetValue(player, out var module) && module.ownDrones && newRoom != null)
+            {
+                module.port.lastSpitOutShortcut = pos;
+                module.port.lastSpitOutRoom = new WeakReference<Room>(newRoom);
+            }
+        }
+
+        private static void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
+        {
+            bool getModule = modules.TryGetValue(self, out var module) && module.ownDrones;
+
+            orig.Invoke(self, eu);
+
+
+            if (getModule)
+            {
+                module.Update(self);
+
+                //if some creature like lizard grab player for more than 60 frames, record as the player's death
+                if (self.dangerGraspTime == 60 && self.AI == null)
+                {
+                    if (module.playerDeathPreventer.canTakeDownThisDamage(self, "player update"))
+                    {
+                        self.dead = false;
+                        self.aerobicLevel = 0f;
+                        if (self.room != null)
+                        {
+                            if (self.room.world.game.cameras[0].hud.textPrompt.gameOverMode) self.room.world.game.cameras[0].hud.textPrompt.gameOverMode = false;
+                        }
+                    }
+                    else self.Die();
+                }
+            }
+
+            //if (Input.GetKeyDown(KeyCode.N))
+            //{
+            //    self.room.game.Win(false);
+            //    //self.room.game.rainWorld.progression.currentSaveState.deathPersistentSaveData.altEnding = true;
+            //    //self.room.game.GoToRedsGameOver();
+
+            //    //self.room.AddObject(new MeshTest(self));
+            //    //if (Simple3DObject.instance != null) return;
+            //    //    self.room.AddObject(new Simple3DObject(self.room, self));
+
+            //}
+            //if (Input.GetKeyDown(KeyCode.K))
+            //{
+            //    Plugin.Log(self.abstractCreature.pos.Tile.ToString());
+            //}
+
+            //if(Random.value < 0.3f)
+            //{
+            //    int randomX = (int)Random.Range(0, self.room.TileWidth);
+            //    int randomY = (int)Random.Range(0, self.room.TileHeight);
+
+            //    if(self.room.GetTile(randomX, randomY).Solid)
+            //    {
+            //        self.room.AddObject(new Lightning(self.room, self.DangerPos, self.room.MiddleOfTile(randomX, randomY)));
+            //    }
+            //}
+        }
+
+        private static void Player_ctor(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
+        {
+            orig.Invoke(self, abstractCreature, world);
+            modules.Add(self, new PlayerModule(self));
+            //(self.abstractCreature.world.game.session as StoryGameSession).saveState.deathPersistentSaveData.karma = 9;
+        }
+
+
+        public class PlayerModule
+        {
+            public readonly WeakReference<Player> playerRef;
+            public readonly SlugcatStats.Name name;
+            public readonly SlugBaseCharacter character;
+            public readonly PlayerExtraMovement playerExtraMovement;
+
+            public static SlugcatStats.Name DroneMasterName { get; private set; }
+
+            public readonly int wirelessChargeNeeds = 400;
+
+            public readonly bool ownDrones;
+            public readonly bool usingDefaultCol = false;
+            public readonly bool isStoryGamePlayer;
+
+            public readonly Color eyeColor;
+            public readonly Color bodyColor;
+            public readonly Color laserColor;
+
+            #region WorldState
+            public EnemyCreator enemyCreator;
+            #endregion
+
+            #region Graphics
+            public bool graphicsInited = false;
+
+            public MetalGills metalGills;
+            public DronePortGraphics portGraphics;
+            public int grillIndex = -1;
+            public int newEyeIndex = -1;
+            public int portIndex = -1;
+            #endregion
+
+            #region PlayeState
+            public PlayerDeathPreventer playerDeathPreventer;
+            public bool lockMovementInput = false;
+            public bool fullCharge => ownDrones && playerRef.TryGetTarget(out var player) && player.playerState.foodInStomach == player.MaxFoodInStomach;
+            #endregion
+
+            public PlayerModule(Player player)
+            {
+                ownDrones = Plugin.OwnLaserDrone.TryGet(player, out bool ownLaserDrone) && ownLaserDrone;
+                playerRef = new WeakReference<Player>(player);
+                isStoryGamePlayer = player.room.game.session is StoryGameSession;
+
+                //Plugin.Log(DeathPersistentSaveDataPatch.GetUnitOfHeader(EnemyCreator.header).ToString());
+
+                if (ownDrones)
+                {
+                    ExtEnumBase extEnumBase;
+
+                    bool canParse = ExtEnumBase.TryParse(typeof(SlugcatStats.Name), Plugin.DroneMasterName, true, out extEnumBase);
+                    if (canParse && name == null)
+                    {
+                        name = extEnumBase as SlugcatStats.Name;
+                        if (DroneMasterName == null)
+                        {
+                            DroneMasterName = name;
+                        }
+                    }
+                    //Plugin.Log(("Get PlayerName : " + name.value);
+                    if (SlugBaseCharacter.TryGet(name, out character))
+                    {
+                        ColorSlot[] array;
+                        bool flag4 = character.Features.TryGet<ColorSlot[]>(PlayerFeatures.CustomColors, out array);
+                        if (flag4)
+                        {
+                            Plugin.Log(array.Length.ToString());
+
+                            if (array.Length > 0)
+                            {
+                                bodyColor = array[0].GetColor(player.playerState.playerNumber);
+                                Plugin.Log("eyecolor : " + ColorUtility.ToHtmlStringRGB(bodyColor));
+
+                            }
+                            if (array.Length > 1)
+                            {
+                                eyeColor = array[1].GetColor(player.playerState.playerNumber);
+                                Plugin.Log("bodyColor : " + ColorUtility.ToHtmlStringRGB(eyeColor));
+                            }
+                            if (array.Length > 2)
+                            {
+                                laserColor = array[2].GetColor(player.playerState.playerNumber);
+                                Plugin.Log("laserColor : " + ColorUtility.ToHtmlStringRGB(laserColor));
+                            }
+                        }
+                        if (PlayerGraphics.customColors != null && !player.IsJollyPlayer)
+                        {
+                            if (PlayerGraphics.customColors.Count > 0)
+                            {
+                                bodyColor = PlayerGraphics.CustomColorSafety(0);
+                                Plugin.Log("Custom-eyecolor : " + ColorUtility.ToHtmlStringRGB(bodyColor));
+                            }
+                            if (PlayerGraphics.customColors.Count > 1)
+                            {
+                                eyeColor = PlayerGraphics.CustomColorSafety(1);
+                                Plugin.Log("Custom-bodyColor : " + ColorUtility.ToHtmlStringRGB(eyeColor));
+                            }
+                            if (PlayerGraphics.customColors.Count > 2)
+                            {
+                                laserColor = PlayerGraphics.CustomColorSafety(2);
+                                Plugin.Log("Custom-laserColor : " + ColorUtility.ToHtmlStringRGB(laserColor));
+                            }
+                        }
+                        if (PlayerGraphics.jollyColors != null && player.IsJollyPlayer)
+                        {
+                            bodyColor = PlayerGraphics.JollyColor(player.playerState.playerNumber, 0);
+                            Plugin.Log("Jolly-eyecolor : " + ColorUtility.ToHtmlStringRGB(bodyColor));
+
+                            eyeColor = PlayerGraphics.JollyColor(player.playerState.playerNumber, 1);
+                            Plugin.Log("Jolly-bodyColor : " + ColorUtility.ToHtmlStringRGB(eyeColor));
+
+                            laserColor = PlayerGraphics.JollyColor(player.playerState.playerNumber, 2);
+                            Plugin.Log("Jolly-laserColor : " + ColorUtility.ToHtmlStringRGB(laserColor));
+                        }
+
+                        SetUpOverrides(player);
+
+                        port = new DronePort(player);
+                        if (Plugin.instance.config.moreEnemies.Value && isStoryGamePlayer) enemyCreator = new EnemyCreator(this);
+                        if (!Plugin.instance.config.canBackSpear.Value) player.spearOnBack = null;
+
+                        playerDeathPreventer = new PlayerDeathPreventer(this);
+                        playerExtraMovement = new PlayerExtraMovement();
+                    }
+                }
+            }
+
+            public void Update(Player player) // call in Player.Update
+            {
+                if (port != null) port.Update();
+                if (playerDeathPreventer != null) playerDeathPreventer.Update();
+                if (enemyCreator != null) enemyCreator.Update();
+                if (playerExtraMovement != null) playerExtraMovement.Update(player);
+            }
+
+        }
+        */
+    }
+}

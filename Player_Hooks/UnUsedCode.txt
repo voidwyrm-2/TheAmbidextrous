@@ -32,7 +32,6 @@ private void Creature_Violence(On.Creature.orig_Violence orig, Creature self, Bo
 */
 
 /*
-bool SecretScugUnlocked = false;
 private void MainMenu_Update(On.Menu.MainMenu.orig_Update orig, Menu.MainMenu self)
 {
     orig(self);
