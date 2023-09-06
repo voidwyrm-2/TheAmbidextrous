@@ -39,6 +39,7 @@ namespace NuclearPasta.TheAmbidextrous.Player_Hooks
 
             //Dough
             On.Player.SwallowObject += Player_eeg;
+           
 
         }
 
@@ -46,13 +47,14 @@ namespace NuclearPasta.TheAmbidextrous.Player_Hooks
         private static void Player_eeg(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
             orig.Invoke(self, grasp);
-            if (ModManager.MSC && SecretScugHooks.IsOvenTimerDone && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.Rock && self.FoodInStomach == TheAmbidextrousMod.DoughMaxFood)
+            if (ModManager.MSC && SecretScugHooks.IsOvenTimerDone && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.Rock && self.FoodInStomach == TheAmbidextrousMod.DoughMaxFood /*&& Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift)*/ )
             {
                 self.objectInStomach = new AbstractConsumable(self.room.world, MoreSlugcatsEnums.AbstractObjectType.SingularityBomb, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
-                self.AddFood(3);
+                self.SubtractFood(14);
                 //base.Logger.LogDebug("Chef Mung Daal: noice1");
             }
         }
+
 
 
         //Ambi

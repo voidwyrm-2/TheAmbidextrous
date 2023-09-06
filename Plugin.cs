@@ -63,7 +63,36 @@ namespace NuclearPasta.TheAmbidextrous
 
             On.Player.Update += Player_GiveSofanthiel;
 
+            On.Player.Destroy += PlayerDestroyHook;
+            On.Player.Die += Player_Die;
+            On.Player.ActivateAscension += Player_ActivateAscension;
+
         }
+
+        private void Player_ActivateAscension(On.Player.orig_ActivateAscension orig, Player self)
+        {
+            if (Input.GetKey(KeyCode.KeypadPlus))
+            {
+                self.ActivateAscension();
+            }
+        }
+
+        private void Player_Die(On.Player.orig_Die orig, Player self)
+        {
+            if (Input.GetKey(KeyCode.LeftControl) && SecretScugHooks.IsOvenTimerDone)
+            {
+                //this.hurtLevel = 0f;
+                self.playerState.permanentDamageTracking = 0.0;
+            }
+            orig(self);
+        }
+
+        private void PlayerDestroyHook(On.Player.orig_Destroy orig, Player self)
+        {
+            orig.Invoke(self);
+            self.Die();
+        }
+
 
         //Original: UW_S02 //Test: UW_A12
         private void Player_GiveSofanthiel(On.Player.orig_Update orig, Player self, bool eu)

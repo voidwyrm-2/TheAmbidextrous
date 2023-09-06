@@ -39,7 +39,7 @@ namespace NuclearPasta.TheAmbidextrous.Player_Hooks
 
         private static void Lizard_ctor(On.Lizard.orig_ctor orig, Lizard self, AbstractCreature abstractCreature, World world)
         {
-            if (TheAmbidextrousMod.IsPlayerAmbidextrous == true)
+            if (TheAmbidextrousMod.IsPlayerAmbidextrous || SecretScugHooks.IsOvenTimerDone)
             {
                 self.spawnDataEvil = Mathf.Min(self.spawnDataEvil, meanness);
             }
@@ -48,9 +48,13 @@ namespace NuclearPasta.TheAmbidextrous.Player_Hooks
 
         private static void Player_Jump(On.Player.orig_Jump orig, Player self)
         {
-            if (TheAmbidextrousMod.IsPlayerAmbidextrous == true)
+            if (TheAmbidextrousMod.IsPlayerAmbidextrous)
             {
                 self.jumpBoost *= 1f + power;
+            }
+            else if (SecretScugHooks.IsOvenTimerDone)
+            {
+                self.jumpBoost *= 0f + power;
             }
             orig(self);
         }
