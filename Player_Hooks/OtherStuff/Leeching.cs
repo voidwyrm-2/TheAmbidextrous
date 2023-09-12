@@ -21,7 +21,7 @@ using MoreSlugcats;
 using Noise;
 using DevInterface;
 
-namespace NuclearPasta.TheAmbidextrous.Player_Hooks
+namespace NuclearPasta.TheAmbidextrous.Player_Hooks.OtherStuff
 {
     public class Leeching
     {

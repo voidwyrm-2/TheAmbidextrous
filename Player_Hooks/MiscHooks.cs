@@ -48,7 +48,7 @@ namespace NuclearPasta.TheAmbidextrous.Player_Hooks
 
         private static void Player_Jump(On.Player.orig_Jump orig, Player self)
         {
-            if (TheAmbidextrousMod.IsPlayerAmbidextrous)
+            if (/*TheAmbidextrousMod.IsPlayerAmbidextrous*/ self.SlugCatClass == TheAmbidextrousMod.AmbidextrousSlugcat)
             {
                 self.jumpBoost *= 1f + power;
             }

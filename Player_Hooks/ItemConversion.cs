@@ -46,8 +46,8 @@ namespace NuclearPasta.TheAmbidextrous.Player_Hooks
 
         private static void Player_eeg(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
-            orig.Invoke(self, grasp);
-            if (ModManager.MSC && SecretScugHooks.IsOvenTimerDone && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.Rock && self.FoodInStomach == TheAmbidextrousMod.DoughMaxFood /*&& Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift)*/ )
+            orig(self, grasp);
+            if (ModManager.MSC && SecretScugHooks.IsOvenTimerDone && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.Rock && self.FoodInStomach == TheAmbidextrousMod.DoughMaxFood && Input.GetKeyDown(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.LeftShift))
             {
                 self.objectInStomach = new AbstractConsumable(self.room.world, MoreSlugcatsEnums.AbstractObjectType.SingularityBomb, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
                 self.SubtractFood(14);
@@ -60,7 +60,7 @@ namespace NuclearPasta.TheAmbidextrous.Player_Hooks
         //Ambi
         private static void Player_BlackholebombToGrenade(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
-            orig.Invoke(self, grasp);
+            orig(self, grasp);
             if (ModManager.MSC && TheAmbidextrousMod.IsPlayerAmbidextrous == true && self.objectInStomach.type == MoreSlugcatsEnums.AbstractObjectType.SingularityBomb && !(self.FoodInStomach == 14))
             {
                 self.objectInStomach = new AbstractConsumable(self.room.world, AbstractPhysicalObject.AbstractObjectType.ScavengerBomb, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
@@ -71,7 +71,7 @@ namespace NuclearPasta.TheAmbidextrous.Player_Hooks
 
         private static void Player_GrenadeToRock(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
-            orig.Invoke(self, grasp);
+            orig(self, grasp);
             if (TheAmbidextrousMod.IsPlayerAmbidextrous == true && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb && !(self.FoodInStomach == 14))
             {
                 self.objectInStomach = new AbstractConsumable(self.room.world, AbstractPhysicalObject.AbstractObjectType.Rock, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
@@ -82,7 +82,7 @@ namespace NuclearPasta.TheAmbidextrous.Player_Hooks
 
         private static void Player_CherrybombToBatnip(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
-            orig.Invoke(self, grasp);
+            orig(self, grasp);
             if (TheAmbidextrousMod.IsPlayerAmbidextrous == true && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.FirecrackerPlant && !(self.FoodInStomach == 14))
             {
                 self.objectInStomach = new AbstractConsumable(self.room.world, AbstractPhysicalObject.AbstractObjectType.FlyLure, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
@@ -93,7 +93,7 @@ namespace NuclearPasta.TheAmbidextrous.Player_Hooks
 
         private static void Player_LanternToGooieduck(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
-            orig.Invoke(self, grasp);
+            orig(self, grasp);
             if (ModManager.MSC && TheAmbidextrousMod.IsPlayerAmbidextrous == true && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.Lantern && !(self.FoodInStomach == 14))
             {
                 self.objectInStomach = new AbstractConsumable(self.room.world, MoreSlugcatsEnums.AbstractObjectType.GooieDuck, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
@@ -103,7 +103,7 @@ namespace NuclearPasta.TheAmbidextrous.Player_Hooks
 
         private static void Player_IggyeyeToPearl(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
-            orig.Invoke(self, grasp);
+            orig(self, grasp);
             if (ModManager.MSC && TheAmbidextrousMod.IsPlayerAmbidextrous == true && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.OverseerCarcass && !(self.FoodInStomach == 14))
             {
                 self.objectInStomach = new AbstractConsumable(self.room.world, AbstractPhysicalObject.AbstractObjectType.DataPearl, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);
@@ -114,7 +114,7 @@ namespace NuclearPasta.TheAmbidextrous.Player_Hooks
 
         private static void Player_BubblegrassToBatnip(On.Player.orig_SwallowObject orig, Player self, int grasp)
         {
-            orig.Invoke(self, grasp);
+            orig(self, grasp);
             if (TheAmbidextrousMod.IsPlayerAmbidextrous == true && self.objectInStomach.type == AbstractPhysicalObject.AbstractObjectType.BubbleGrass && !(self.FoodInStomach == 14))
             {
                 self.objectInStomach = new AbstractConsumable(self.room.world, AbstractPhysicalObject.AbstractObjectType.FlyLure, null, self.abstractPhysicalObject.pos, self.room.game.GetNewID(), -1, -1, null);

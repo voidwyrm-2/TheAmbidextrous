@@ -30,7 +30,7 @@ namespace NuclearPasta.TheAmbidextrous
 
         public static readonly SlugcatStats.Name AmbidextrousSlugcat = new SlugcatStats.Name("Ambidextrous");
         public static readonly SlugcatStats.Name SecretScug = new SlugcatStats.Name("Breadlord");
-        public static readonly int AmbiMaxFood = 14;
+        public static readonly int AmbiMaxFood = 7;
         public static readonly int DoughMaxFood = 14;
         //int Customeeinput = 0; //do not delete
 
@@ -38,6 +38,7 @@ namespace NuclearPasta.TheAmbidextrous
         public static bool DoesPlayerExist;
         public static bool IsPlayerAlive;
         public static bool IsPlayerAmbidextrous;
+        public static bool TestAscention;
         public void OnEnable()
         {
             //ExternalClassTemplate.OnEnable(); //use this one as a template, please do not delete
@@ -58,162 +59,30 @@ namespace NuclearPasta.TheAmbidextrous
             On.Player.Update += StartWithSpearOnBack;
             On.Player.Update += Player_CheckforAmbidexterity;
 
-            //On.Player.Die += Player_BlackholeSun;
-            //On.AbstractCreature.ctor += AbstractCreature_ctor;
-
-            On.Player.Update += Player_GiveSofanthiel;
-
             On.Player.Destroy += PlayerDestroyHook;
-            On.Player.Die += Player_Die;
-            On.Player.ActivateAscension += Player_ActivateAscension;
+            On.Player.Update += Player_Die;
 
         }
 
-        private void Player_ActivateAscension(On.Player.orig_ActivateAscension orig, Player self)
-        {
-            if (Input.GetKey(KeyCode.KeypadPlus))
-            {
-                self.ActivateAscension();
-            }
-        }
+        //self.owner.room.game.cameras[0].hud.textPrompt.AddMessage(self.owner.room.game.rainWorld.inGameTranslator.Translate("AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH"), 0, 200, false, false);
 
-        private void Player_Die(On.Player.orig_Die orig, Player self)
+        private void Player_Die(On.Player.orig_Update orig, Player self, bool eu)
         {
-            if (Input.GetKey(KeyCode.LeftControl) && SecretScugHooks.IsOvenTimerDone)
+            if (SecretScugHooks.IsOvenTimerDone && Input.GetKeyDown(KeyCode.LeftControl))
             {
                 //this.hurtLevel = 0f;
                 self.playerState.permanentDamageTracking = 0.0;
             }
-            orig(self);
+            orig(self, eu);
         }
 
         private void PlayerDestroyHook(On.Player.orig_Destroy orig, Player self)
         {
             orig.Invoke(self);
             self.Die();
-        }
-
-
-        //Original: UW_S02 //Test: UW_A12
-        private void Player_GiveSofanthiel(On.Player.orig_Update orig, Player self, bool eu)
-        {
-            //var DroneBool = new PlayerNPCState(AbstractCreature abstractCreature, int playerNumber);
-            if (IsPlayerAmbidextrous)
-            {
-                //PlayerNPCState.Drone = true;
-                MoreSlugcatsEnums.GateRequirement.RoboLock = null;
-                RegionGate.GateRequirement roboLock = MoreSlugcatsEnums.GateRequirement.RoboLock;
-                if (roboLock != null)
-                {
-                    roboLock.Unregister();
-                }
-            }
-            orig(self, eu);
-        }
-
-
-        /*
-        public FirecrackerPlant.ScareObject scareObj;
-
-        private void AbstractCreature_ctor(On.AbstractCreature.orig_ctor orig, AbstractCreature self, World world, CreatureTemplate creatureTemplate, Creature realizedCreature, WorldCoordinate pos, EntityID ID)
-        {
-            if (realizedCreature.scareObj == null)
-            {
-                var room = realizedCreature.room;
-                var pos = realizedCreature.mainBodyChunk.pos;
-                var color = realizedCreature.ShortCutColor();
-                realizedCreature.scareObj = new FirecrackerPlant.ScareObject(pos);
-                realizedCreature.scareObj.fearRange = 8000f;
-                realizedCreature.scareObj.fearScavs = true;
-                realizedCreature.room.AddObject(this.scareObj);
-                realizedCreature.room.InGameNoise(new InGameNoise(base.firstChunk.pos, 8000f, this, 1f));
-            }
-        }
-
-        private void Player_BlackholeSun(On.Player.orig_Die orig, Player self)
-        {
-            bool wasDead = self.dead;
-
             orig(self);
-
-            if (!wasDead && self.dead)
-            {
-                // Adapted from ScavengerBomb.Explode
-                var room = self.room;
-                var pos = self.mainBodyChunk.pos;
-                var color = self.ShortCutColor();
-                Vector2 vector = Vector2.Lerp(pos, lastPos, 0.35f);
-                self.room.AddObject(new SingularityBomb.SparkFlash(pos, 300f, new Color(0f, 0f, 1f)));
-                self.room.AddObject(new Explosion(self.room, self, vector, 7, 450f, 6.2f, 10f, 280f, 0.25f, self.thrownBy, 0.3f, 160f, 1f));
-                self.room.AddObject(new Explosion(self.room, self, vector, 7, 2000f, 4f, 0f, 400f, 0.25f, self.thrownBy, 0.3f, 200f, 1f));
-                self.room.AddObject(new Explosion.ExplosionLight(vector, 280f, 1f, 7, self.explodeColor));
-                self.room.AddObject(new Explosion.ExplosionLight(vector, 230f, 1f, 3, new Color(1f, 1f, 1f)));
-                self.room.AddObject(new Explosion.ExplosionLight(vector, 2000f, 2f, 60, self.explodeColor));
-                self.room.AddObject(new ShockWave(vector, 350f, 0.485f, 300, true));
-                self.room.AddObject(new ShockWave(vector, 2000f, 0.185f, 180, false));
-                for (int i = 0; i < 25; i++)
-                {
-                    Vector2 a = Custom.RNV();
-                    if (self.room.GetTile(vector + a * 20f).Solid)
-                    {
-                        if (!self.room.GetTile(vector - a * 20f).Solid)
-                        {
-                            a *= -1f;
-                        }
-                        else
-                        {
-                            a = Custom.RNV();
-                        }
-                    }
-                    for (int j = 0; j < 3; j++)
-                    {
-                        self.room.AddObject(new Spark(vector + a * Mathf.Lerp(30f, 60f, Random.value), a * Mathf.Lerp(7f, 38f, Random.value) + Custom.RNV() * 20f * Random.value, Color.Lerp(self.explodeColor, new Color(1f, 1f, 1f), Random.value), null, 11, 28));
-                    }
-                    self.room.AddObject(new Explosion.FlashingSmoke(vector + a * 40f * Random.value, a * Mathf.Lerp(4f, 20f, Mathf.Pow(Random.value, 2f)), 1f + 0.05f * Random.value, new Color(1f, 1f, 1f), self.explodeColor, Random.Range(3, 11)));
-                }
-                for (int k = 0; k < 6; k++)
-                {
-                    self.room.AddObject(new SingularityBomb.BombFragment(vector, Custom.DegToVec(((float)k + Random.value) / 6f * 360f) * Mathf.Lerp(18f, 38f, Random.value)));
-                }
-                self.room.ScreenMovement(new Vector2?(vector), default(Vector2), 0.9f);
-                for (int l = 0; l < self.abstractPhysicalObject.stuckObjects.Count; l++)
-                {
-                    self.abstractPhysicalObject.stuckObjects[l].Deactivate();
-                }
-                self.room.PlaySound(SoundID.Bomb_Explode, vector);
-                self.room.InGameNoise(new InGameNoise(vector, 9000f, self, 1f));
-                for (int m = 0; m < self.room.physicalObjects.Length; m++)
-                {
-                    for (int n = 0; n < self.room.physicalObjects[m].Count; n++)
-                    {
-                        if (self.room.physicalObjects[m][n] is Creature && Custom.Dist(self.room.physicalObjects[m][n].firstChunk.pos, base.firstChunk.pos) < 350f)
-                        {
-                            if (self.thrownBy != null)
-                            {
-                                (self.room.physicalObjects[m][n] as Creature).killTag = self.thrownBy.abstractCreature;
-                            }
-                            (self.room.physicalObjects[m][n] as Creature).Die();
-                        }
-                        if (self.room.physicalObjects[m][n] is ElectricSpear)
-                        {
-                            if ((self.room.physicalObjects[m][n] as ElectricSpear).abstractSpear.electricCharge == 0)
-                            {
-                                (self.room.physicalObjects[m][n] as ElectricSpear).Recharge();
-                            }
-                            else
-                            {
-                                (self.room.physicalObjects[m][n] as ElectricSpear).ExplosiveShortCircuit();
-                            }
-                        }
-                    }
-                }
-                self.CreateFear();
-                self.scareObj.lifeTime = -600;
-                self.scareObj.fearRange = 12000f;
-                self.room.InGameNoise(new InGameNoise(pos, 12000f, self, 1f));
-            }
         }
-        */
+
 
         private void Player_CheckforAmbidexterity(On.Player.orig_Update orig, Player self, bool eu)
         {
@@ -251,7 +120,6 @@ namespace NuclearPasta.TheAmbidextrous
                     IsPlayerAlive = true;
                 }
             }
-
             orig(self, eu);
         }
 
